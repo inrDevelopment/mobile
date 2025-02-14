@@ -17,7 +17,7 @@ import { Container } from "../../components/Container";
 import { BASE_API_HOME } from "../../constants/api";
 import Colors from "../../constants/Colors";
 import { AuthContext } from "../../contexts/AuthenticationContext";
-import { RootListType } from "../../naviagation/root";
+import { RootListType } from "../../navigation/root";
 import { style } from "./style";
 
 const mockData = [
