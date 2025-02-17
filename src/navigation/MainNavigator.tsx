@@ -10,7 +10,9 @@ import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Colors from "../constants/Colors";
 import { constant } from "../constants/constants";
 import { AuthContext } from "../contexts/AuthenticationContext";
+import BulletimItem from "../screens/BulletimItem";
 import BulletinsScreen from "../screens/Bulletins";
+import ClassificatorItem from "../screens/ClassificatorItem";
 import ClassificatorsScreen from "../screens/Classificators";
 import FaqScreen from "../screens/FAQ";
 import FavoritesScreen from "../screens/Favorites";
@@ -157,6 +159,48 @@ const MainNavigator = () => {
         options={{
           headerTitle: "Ajuda",
           drawerLabel: "Ajuda",
+          drawerIcon: ({ color, size }) => (
+            <FontAwesome5
+              name="question"
+              size={24}
+              color={Colors.primary.dark}
+            />
+          ),
+          drawerActiveBackgroundColor: Colors.primary.background,
+          drawerActiveTintColor: Colors.primary.dark,
+          drawerLabelStyle: {
+            fontSize: 20,
+          },
+        }}
+      />
+      <Drawer.Screen
+        name="BulletimItem"
+        component={BulletimItem}
+        options={{
+          headerTitle: "Boletim INR",
+          drawerLabel: "Boletim INR",
+          drawerItemStyle: { display: "none" },
+          drawerIcon: ({ color, size }) => (
+            <FontAwesome5
+              name="question"
+              size={24}
+              color={Colors.primary.dark}
+            />
+          ),
+          drawerActiveBackgroundColor: Colors.primary.background,
+          drawerActiveTintColor: Colors.primary.dark,
+          drawerLabelStyle: {
+            fontSize: 20,
+          },
+        }}
+      />
+      <Drawer.Screen
+        name="ClassificatorItem"
+        component={ClassificatorItem}
+        options={{
+          headerTitle: "Classificadores INR",
+          drawerLabel: "Classificadores INR",
+          drawerItemStyle: { display: "none" },
           drawerIcon: ({ color, size }) => (
             <FontAwesome5
               name="question"

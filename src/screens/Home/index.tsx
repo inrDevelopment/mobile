@@ -24,31 +24,37 @@ const mockData = [
   {
     id: 1,
     title: "Boletim Eletrônico INR nº 12566, de 07/02/2025",
+    type: "boletim",
   },
   {
     id: 2,
     title:
       "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
+    type: "classificador",
   },
   {
     id: 3,
     title:
       "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
+    type: "classificador",
   },
   {
     id: 4,
     title:
       "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
+    type: "classificador",
   },
   {
     id: 5,
     title:
       "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
+    type: "classificador",
   },
   {
     id: 6,
     title:
       "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
+    type: "classificador",
   },
 ];
 
@@ -62,6 +68,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
   const authContext = useContext(AuthContext);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [favoritos, setFavoritos] = useState<any[]>([]);
   const [items, setItems] = useState<any>(
     mockData.map((item: any) => ({
       ...item,
@@ -72,7 +79,6 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
   const [banners, setBanners] = useState<any[]>([]);
 
   const [lastItems, setLastItems] = useState<any[]>([]);
-  const [favoritos, setFavoritos] = useState<any[]>([]);
 
   const toggleRead = (id: number) => {
     if (!isLoggedIn) {
@@ -219,15 +225,15 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
           <View key={item.id} style={style.itemContainer}>
             <TouchableOpacity
               style={style.itemTouchable}
-              // onPress={() => {
-              //   if (item.type === "boletim") {
-              //     navigation.navigate("BoletimItem", { boletim: item });
-              //   } else {
-              //     navigation.navigate("ClassificadorItem", {
-              //       classificador: item,
-              //     });
-              //   }
-              // }}
+              onPress={() => {
+                if (item.type === "boletim") {
+                  navigation.navigate("BulletimItem", { boletim: item });
+                } else {
+                  navigation.navigate("ClassificatorItem", {
+                    classificador: item,
+                  });
+                }
+              }}
             >
               <Text style={style.itemTitle}>{item.content.title}</Text>
             </TouchableOpacity>
@@ -257,7 +263,18 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
 
         {items.map((item: any, index: number) => (
           <View key={item.id} style={style.itemContainer}>
-            <TouchableOpacity style={style.itemTouchable}>
+            <TouchableOpacity
+              style={style.itemTouchable}
+              onPress={() => {
+                if (item.type === "boletim") {
+                  navigation.navigate("BulletimItem", { boletim: item });
+                } else {
+                  navigation.navigate("ClassificatorItem", {
+                    classificador: item,
+                  });
+                }
+              }}
+            >
               <Text style={style.itemTitle}>{item.title}</Text>
             </TouchableOpacity>
             <View style={style.iconContainer}>
