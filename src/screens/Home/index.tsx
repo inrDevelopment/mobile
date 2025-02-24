@@ -66,7 +66,7 @@ interface homeScreenProps {
 
 const HomeScreen = ({ navigation }: homeScreenProps) => {
   const authContext = useContext(AuthContext);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [favoritos, setFavoritos] = useState<any[]>([]);
   const [items, setItems] = useState<any>(
@@ -112,33 +112,6 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
       //Limpar Async Storage
       // const allKeys = await AsyncStorage.getAllKeys(); // Get all keys from AsyncStorage
       // await AsyncStorage.multiRemove(allKeys); // Remove all keys
-
-      //Verificar as permissões de notificação
-      // const { status } = await Notifications.getPermissionsAsync();
-      // let finalStatus = status;
-
-      //Se não tiver autorização, então pede ao usuário
-      // if (finalStatus !== "granted") {
-      //   const { status } = await Notifications.requestPermissionsAsync();
-      //   let finalStatus = status;
-      // }
-
-      // //Se mesmo depois de pedir autorização, ainda não tiver, mostrar alerta e retornar
-      // if (finalStatus !== "granted") {
-      //   Alert.alert(
-      //     "Erro",
-      //     "O Aplicativo precisa de permissão para avisá-lo da chegada de novos Boletins."
-      //   );
-      //   return;
-      // }
-
-      //Configuração de notificações exclusiva do Android
-      // if (Platform.OS === "android") {
-      //   await Notifications.setNotificationChannelAsync("default", {
-      //     name: "default",
-      //     importance: Notifications.AndroidImportance.DEFAULT,
-      //   });
-      // }
 
       const apiFetch = await axios.get(BASE_API_HOME);
 

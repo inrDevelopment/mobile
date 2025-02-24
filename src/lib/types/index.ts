@@ -3,5 +3,15 @@ type asyncUser = {
   deviceKey: string;
   userToken?: string;
 };
+type padraoItem = {
+  title: string;
+  link: string;
+};
 
-export { asyncUser };
+type contentType = {
+  text?: string;
+  tipo?: string;
+  url?: string;
+};
+
+export { asyncUser, contentType, padraoItem };

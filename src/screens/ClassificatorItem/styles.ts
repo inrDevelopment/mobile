@@ -3,12 +3,11 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   manTitleContainer: {
     alignItems: "flex-end",
     marginVertical: "2%",
-    marginRight: "2%",
+    marginHorizontal: "2%",
   },
   mainTitle: {
     fontWeight: "bold",
@@ -17,6 +16,7 @@ export const styles = StyleSheet.create({
     width: "95%",
     alignSelf: "center",
     alignItems: "center",
+    marginBottom: -30,
   },
   clickable: {
     marginBottom: "2%",

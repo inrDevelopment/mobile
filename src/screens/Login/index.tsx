@@ -1,7 +1,8 @@
 import { FontAwesome, Ionicons, Octicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DrawerScreenProps } from "@react-navigation/drawer";
 import axios from "axios";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -12,25 +13,28 @@ import {
   View,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/native-stack/types";
 import { Container } from "../../components/Container";
 import CustomIconButton from "../../components/CustomIconButton";
 import { BASE_API_USER } from "../../constants/api";
 import Colors from "../../constants/Colors";
 import { AuthContext } from "../../contexts/AuthenticationContext";
-import { RootListType } from "../../naviagation/root";
+import { RootListType } from "../../navigation/root";
 import styles from "./styles";
 
-type loginScreenNavigationProp = NativeStackNavigationProp<
-  RootListType,
-  "LogIn"
->;
+type Props = DrawerScreenProps<RootListType, "LogIn">;
 
-interface loginScreenProps {
-  navigation: loginScreenNavigationProp;
-}
+const LoginScreen = ({ navigation }: Props) => {
+  navigation.setOptions({
+    headerRight: () => {
+      return (
+        <Image
+          source={require("../../../assets/icon.png")}
+          style={{ width: 40, height: 40, marginRight: 10 }}
+        />
+      );
+    },
+  });
 
-const LoginScreen = ({ navigation }: loginScreenProps) => {
   const authContext = useContext(AuthContext);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -38,6 +42,13 @@ const LoginScreen = ({ navigation }: loginScreenProps) => {
 
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (authContext.isLoggedIn) {
+      console.log(authContext.isLoggedIn);
+      navigation.navigate("Home");
+    }
+  }, [authContext.isLoggedIn]);
 
   const authenticateUser = async () => {
     try {
@@ -63,12 +74,13 @@ const LoginScreen = ({ navigation }: loginScreenProps) => {
         const user = {
           userToken: authenticationResponse.data.data.credential,
         };
+
         const jsonValue = JSON.stringify(user);
         await AsyncStorage.setItem("user", jsonValue);
 
         //Fazer o login no contexto
         authContext.login();
-        navigation.navigate("Início" as never);
+        navigation.navigate("Home");
       } else {
         Alert.alert(
           "Erro!",

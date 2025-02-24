@@ -30,11 +30,13 @@ const MainNavigator = () => {
       backBehavior="history"
       screenOptions={{
         drawerType: "slide",
+        headerTitleAlign: "left",
+        headerTintColor: Colors.primary.dark,
         overlayColor: "transparent",
         drawerStyle: styles.drawerStyle,
         drawerActiveBackgroundColor: Colors.primary.dark,
         drawerItemStyle: styles.drawerItemStyles,
-        drawerActiveTintColor: Colors.primary.light,
+        drawerActiveTintColor: Colors.primary.title,
         drawerInactiveTintColor: Colors.primary.dark,
         drawerLabelStyle: styles.drawerLabelStyles,
         headerStyle: {
@@ -70,12 +72,16 @@ const MainNavigator = () => {
         component={HomeScreen}
         options={{
           headerTitle: "Início",
+
           drawerLabel: "Início",
-          drawerIcon: ({ color, size }) => (
-            <FontAwesome5 name="home" size={20} color={Colors.primary.dark} />
+          drawerIcon: ({ color, size, focused }) => (
+            <FontAwesome5
+              name="home"
+              size={20}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
+            />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
           },
@@ -87,27 +93,33 @@ const MainNavigator = () => {
         options={{
           headerTitle: "Entrar",
           drawerLabel: "Entrar",
-          drawerIcon: ({ color, size }) => (
-            <Entypo name="login" size={24} color={Colors.primary.dark} />
+          drawerIcon: ({ color, size, focused }) => (
+            <Entypo
+              name="login"
+              size={24}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
+            />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
           },
         }}
-      />
+      ></Drawer.Screen>
       <Drawer.Screen
         name="Classificadores"
         component={ClassificatorsScreen}
         options={{
           headerTitle: "Classificadores",
           drawerLabel: "Classificadores",
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="newspaper" size={24} color={Colors.primary.dark} />
+          drawerIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name="newspaper"
+              size={24}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
+            />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
           },
@@ -119,15 +131,14 @@ const MainNavigator = () => {
         options={{
           headerTitle: "Boletins",
           drawerLabel: "Boletins",
-          drawerIcon: ({ color, size }) => (
+          drawerIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name="bulletin-board"
               size={24}
-              color={Colors.primary.dark}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
             />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
           },
@@ -139,15 +150,14 @@ const MainNavigator = () => {
         options={{
           headerTitle: "Favoritos",
           drawerLabel: "Favoritos",
-          drawerIcon: ({ color, size }) => (
+          drawerIcon: ({ color, size, focused }) => (
             <MaterialIcons
               name="favorite"
               size={24}
-              color={Colors.primary.dark}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
             />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
           },
@@ -159,17 +169,41 @@ const MainNavigator = () => {
         options={{
           headerTitle: "Ajuda",
           drawerLabel: "Ajuda",
-          drawerIcon: ({ color, size }) => (
+          drawerIcon: ({ color, size, focused }) => (
             <FontAwesome5
               name="question"
               size={24}
-              color={Colors.primary.dark}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
             />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
+          },
+        }}
+      />
+      <Drawer.Screen
+        name="Sair"
+        children={() => null}
+        options={{
+          headerTitle: "Sair",
+          drawerLabel: "Sair",
+          drawerIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name="exit-to-app"
+              size={24}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
+            />
+          ),
+          drawerActiveBackgroundColor: Colors.primary.background,
+          drawerLabelStyle: {
+            fontSize: 20,
+          },
+        }}
+        listeners={{
+          focus: () => {
+            authContext.logout();
+            navigation.navigate("Home" as never);
           },
         }}
       />
@@ -180,15 +214,14 @@ const MainNavigator = () => {
           headerTitle: "Boletim INR",
           drawerLabel: "Boletim INR",
           drawerItemStyle: { display: "none" },
-          drawerIcon: ({ color, size }) => (
+          drawerIcon: ({ color, size, focused }) => (
             <FontAwesome5
               name="question"
               size={24}
-              color={Colors.primary.dark}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
             />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
-          drawerActiveTintColor: Colors.primary.dark,
           drawerLabelStyle: {
             fontSize: 20,
           },
@@ -201,11 +234,11 @@ const MainNavigator = () => {
           headerTitle: "Classificadores INR",
           drawerLabel: "Classificadores INR",
           drawerItemStyle: { display: "none" },
-          drawerIcon: ({ color, size }) => (
+          drawerIcon: ({ color, size, focused }) => (
             <FontAwesome5
               name="question"
               size={24}
-              color={Colors.primary.dark}
+              color={focused ? Colors.primary.title : Colors.primary.dark}
             />
           ),
           drawerActiveBackgroundColor: Colors.primary.background,
