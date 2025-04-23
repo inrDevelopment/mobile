@@ -24,17 +24,6 @@ import styles from "./styles";
 type Props = DrawerScreenProps<RootListType, "LogIn">;
 
 const LoginScreen = ({ navigation }: Props) => {
-  navigation.setOptions({
-    headerRight: () => {
-      return (
-        <Image
-          source={require("../../../assets/icon.png")}
-          style={{ width: 40, height: 40, marginRight: 10 }}
-        />
-      );
-    },
-  });
-
   const authContext = useContext(AuthContext);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -44,6 +33,17 @@ const LoginScreen = ({ navigation }: Props) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => {
+        return (
+          <Image
+            source={require("../../../assets/icon.png")}
+            style={{ width: 40, height: 40, marginRight: 10 }}
+          />
+        );
+      },
+    });
+
     if (authContext.isLoggedIn) {
       console.log(authContext.isLoggedIn);
       navigation.navigate("Home");

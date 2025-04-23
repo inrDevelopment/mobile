@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "version": ">= 16.2.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "android": {
+      "distribution": "store"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

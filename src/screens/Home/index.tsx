@@ -66,7 +66,7 @@ interface homeScreenProps {
 
 const HomeScreen = ({ navigation }: homeScreenProps) => {
   const authContext = useContext(AuthContext);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [favoritos, setFavoritos] = useState<any[]>([]);
   const [items, setItems] = useState<any>(

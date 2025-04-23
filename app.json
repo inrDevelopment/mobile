@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Leitor_INR_2.0",
-    "slug": "Leitor_INR_2.0",
-    "version": "1.0.0",
+    "name": "leitor-inr",
+    "slug": "leitor-inr",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -13,16 +13,24 @@
       "backgroundColor": "#eef5f8"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.inrdev.leitorinr",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "70fe34f9-0ea5-4aae-9c0f-f5857e2683d5"
+      }
     }
   }
 }
