@@ -1,0 +1,11 @@
+-App loads
+ -Async Storage verifies if theres a user token stored.
+  -if yes, log in in the context.
+-App loads Main Navigator
+-App loads Home Screen
+-Home Screen 
+ -App calls API to fetch banners
+ -App calls API to fetch latest bulletins
+ -App calls API to fetch user favorites
+  -App sets on screen read/favorites
+  

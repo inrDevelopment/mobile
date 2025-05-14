@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CustomCarousel from "../../components/Carousel";
 import { Container } from "../../components/Container";
 import { BASE_API_HOME } from "../../constants/api";
 import Colors from "../../constants/Colors";
@@ -191,7 +190,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
 
   return (
     <Container>
-      {banners.length > 0 && <CustomCarousel data={banners} />}
+      {/* {banners.length > 0 && <CustomCarousel data={banners} />} */}
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         <Text style={style.title}>Últimos Boletins</Text>
         {lastItems.map((item: any, index: number) => (
