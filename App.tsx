@@ -35,6 +35,7 @@ function AppContent() {
         const parsedValue: asyncUser = storedValue
           ? JSON.parse(storedValue)
           : null;
+        console.log(parsedValue);
 
         //Verificar se já existe uma deviceKey salva. Se não, criar nova e salvar no AsyncStorage
         if (parsedValue && !parsedValue.deviceKey) {
@@ -44,7 +45,6 @@ function AppContent() {
             const jsonValue = JSON.stringify(parsedValue);
             await AsyncStorage.setItem("user", jsonValue);
           }
-          console.log(parsedValue);
         }
 
         //Fazer registro do PushToken na Expo

@@ -18,7 +18,6 @@ import CustomIconButton from "../../components/CustomIconButton";
 import { BASE_API_USER } from "../../constants/api";
 import Colors from "../../constants/Colors";
 import { AuthContext } from "../../contexts/AuthenticationContext";
-import randomDeviceKey from "../../lib/randomDeviceKey";
 import { asyncUser } from "../../lib/types";
 import { RootListType } from "../../navigation/root";
 import styles from "./styles";
@@ -71,24 +70,22 @@ const LoginScreen = ({ navigation }: Props) => {
       const parsedValue: asyncUser = storedValues
         ? JSON.parse(storedValues)
         : null;
+      console.log("parsedValue", parsedValue);
+
       const updatedValue: asyncUser = {
         ...(parsedValue ?? {}),
       };
 
-      if (updatedValue && !updatedValue.deviceKey) {
-        const newDeviceKey = randomDeviceKey(15);
-        updatedValue.deviceKey = newDeviceKey;
-      }
-
       const authenticationResponse = await axios.post(BASE_API_USER, {
-        uuid: updatedValue.deviceKey,
+        uuid: parsedValue.deviceKey,
         login: user,
         senha: password,
       });
+      console.log("authenticationResponse", authenticationResponse.data);
 
-      if (authenticationResponse.data.data) {
+      if (authenticationResponse.data.success) {
         //Salvar o token no Async Storage
-        updatedValue.userToken = authenticationResponse.data.data.credential;
+        updatedValue.userToken = authenticationResponse.data.credential;
         const jsonValue = JSON.stringify(updatedValue);
         await AsyncStorage.setItem("user", jsonValue);
 
