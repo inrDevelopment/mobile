@@ -12,8 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import CustomCarousel from "../../components/Carousel";
 import { Container } from "../../components/Container";
-import { BASE_API_HOME } from "../../constants/api";
+import { BASE_API_HOME, BASE_API_LAST_PUBLISHED } from "../../constants/api";
 import Colors from "../../constants/Colors";
 import { AuthContext } from "../../contexts/AuthenticationContext";
 import { RootListType } from "../../navigation/root";
@@ -112,6 +113,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
       // const allKeys = await AsyncStorage.getAllKeys(); // Get all keys from AsyncStorage
       // await AsyncStorage.multiRemove(allKeys); // Remove all keys
 
+      //Pegar Banners
       const apiFetch = await axios.get(BASE_API_HOME);
 
       if (apiFetch.data.success) {
@@ -123,9 +125,8 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
       }
 
       //Buscar os últimos boletins na API
-      const ultimosBoletins = await axios.get(
-        "https://production.publicacoesinr.com.br/api/last-publishes"
-      );
+      const ultimosBoletins = await axios.get(`${BASE_API_LAST_PUBLISHED}/1`);
+      console.log("ultimosBoletins", ultimosBoletins);
 
       if (ultimosBoletins.data) {
         setLastItems([]);
@@ -190,7 +191,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
 
   return (
     <Container>
-      {/* {banners.length > 0 && <CustomCarousel data={banners} />} */}
+      {banners.length > 0 && <CustomCarousel data={banners} />}
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         <Text style={style.title}>Últimos Boletins</Text>
         {lastItems.map((item: any, index: number) => (

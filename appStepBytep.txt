@@ -8,4 +8,15 @@
  -App calls API to fetch latest bulletins
  -App calls API to fetch user favorites
   -App sets on screen read/favorites
+
+
+  Notifications
+  -instalar Expo Notifications
+  -instalar Expo Device
   
+  -Verificar se o Token do expo é o mesmo armazenado. Caso não seja, enviar para a API.
+  -Ver com o Douglas se o Expo Token será atrelado a um usuario ou a um aparelho, porque
+  se for a um usuario, app tem que fazer a revogação/remoção do token do AsyncStorage, mas
+  caso seja a um aparelho, nada precisa acontecer.
+  o correto é publicações inr (api.publicacoesinr.com.br) eu coloquei invertido (api.inrpublicacoes.com.br)
+  https://api.publicacoesinr.com.br/api-docs/

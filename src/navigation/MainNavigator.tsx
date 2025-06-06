@@ -4,8 +4,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { useNavigation } from "@react-navigation/native";
-import { useContext } from "react";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
+import { useContext, useEffect, useRef } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Colors from "../constants/Colors";
 import { constant } from "../constants/constants";
@@ -18,12 +19,35 @@ import FaqScreen from "../screens/FAQ";
 import FavoritesScreen from "../screens/Favorites";
 import HomeScreen from "../screens/Home";
 import LoginScreen from "../screens/Login";
+import { RootListType } from "./root";
 
 const Drawer = createDrawerNavigator();
 
 const MainNavigator = () => {
   const authContext = useContext(AuthContext);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootListType>>();
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
+
+  useEffect(() => {
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        console.log("App aberto por notificação:", response);
+        navigation.navigate("Home" as never);
+      }
+    });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("Notificação clicada:", response);
+        navigation.navigate("Home" as never);
+      });
+
+    return () => {
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
 
   return (
     <Drawer.Navigator

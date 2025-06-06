@@ -1,6 +1,6 @@
 type asyncUser = {
-  expoPushToken: string;
-  deviceKey: string;
+  expoPushToken?: string;
+  deviceKey?: string;
   userToken?: string;
 };
 type padraoItem = {
