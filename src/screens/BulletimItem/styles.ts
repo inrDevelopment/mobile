@@ -8,7 +8,6 @@ const styles = StyleSheet.create({
   },
   manTitleContainer: {
     alignItems: "flex-end",
-    // marginVertical: "2%",
     marginRight: "2%",
   },
   mainTitle: {

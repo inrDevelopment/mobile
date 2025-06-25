@@ -6,7 +6,6 @@ export const styles = StyleSheet.create({
   },
   manTitleContainer: {
     alignItems: "flex-end",
-    marginVertical: "2%",
     marginHorizontal: "2%",
   },
   mainTitle: {

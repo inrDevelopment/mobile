@@ -1,5 +1,4 @@
 import { FontAwesome, Ionicons, Octicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
@@ -18,7 +17,7 @@ import CustomIconButton from "../../components/CustomIconButton";
 import { BASE_API_USER } from "../../constants/api";
 import Colors from "../../constants/Colors";
 import { AuthContext } from "../../contexts/AuthenticationContext";
-import { asyncUser } from "../../lib/types";
+import { getUser, updateUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import styles from "./styles";
 
@@ -34,19 +33,7 @@ const LoginScreen = ({ navigation }: Props) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => {
-        return (
-          <Image
-            source={require("../../../assets/icon.png")}
-            style={{ width: 40, height: 40, marginRight: 10 }}
-          />
-        );
-      },
-    });
-
     if (authContext.isLoggedIn) {
-      console.log(authContext.isLoggedIn);
       navigation.navigate("Home");
     }
   }, [authContext.isLoggedIn]);
@@ -66,28 +53,18 @@ const LoginScreen = ({ navigation }: Props) => {
       }
 
       //Pegar o deviceKey no AsyncStorage
-      const storedValues = await AsyncStorage.getItem("user");
-      const parsedValue: asyncUser = storedValues
-        ? JSON.parse(storedValues)
-        : null;
-      console.log("parsedValue", parsedValue);
-
-      const updatedValue: asyncUser = {
-        ...(parsedValue ?? {}),
-      };
+      const parsedValue = await getUser();
 
       const authenticationResponse = await axios.post(BASE_API_USER, {
         uuid: parsedValue.deviceKey,
         login: user,
         senha: password,
       });
-      console.log("authenticationResponse", authenticationResponse.data);
 
       if (authenticationResponse.data.success) {
-        //Salvar o token no Async Storage
-        updatedValue.userToken = authenticationResponse.data.credential;
-        const jsonValue = JSON.stringify(updatedValue);
-        await AsyncStorage.setItem("user", jsonValue);
+        await updateUser({
+          userToken: authenticationResponse.data.data.credential,
+        });
 
         //Fazer o login no contexto
         authContext.login();

@@ -56,4 +56,18 @@ export const style = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center",
   },
+  buttonContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 20,
+    marginHorizontal: 80,
+    borderColor: Colors.primary.light,
+    borderWidth: 2,
+    borderRadius: 5,
+    padding: 15,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: Colors.primary.light,
+  },
 });
