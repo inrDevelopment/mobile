@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { getUser } from "../lib/storage/userStorage";
 import { asyncUser } from "../lib/types";
 
 export async function registerForPushNotificationsAsync(): Promise<
@@ -38,11 +39,11 @@ export async function registerForPushNotificationsAsync(): Promise<
 
     //Pegar o Expo Push Token => Mostrar a lógica pro Douglas
     let tokenData = await Notifications.getExpoPushTokenAsync();
+
     const newToken = tokenData.data;
 
     //Pegar o token da Expo no AsyncStorage
-    const storedValue = await AsyncStorage.getItem("user");
-    const parsedValue: asyncUser = storedValue ? JSON.parse(storedValue) : null;
+    const parsedValue = await getUser();
 
     const updatedValue: asyncUser = {
       ...(parsedValue ?? {}),

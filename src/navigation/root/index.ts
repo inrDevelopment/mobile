@@ -2,8 +2,8 @@ export type RootListType = {
   Home: undefined;
   Classificadores: { classificador: any };
   Boletins: { boletim: any };
-  BulletimItem: { boletim: any };
-  ClassificatorItem: { classificador: any };
+  BulletimItem: { boletimId: number };
+  ClassificatorItem: { classificadorId: number };
   LogIn: undefined;
   RetrievePassword: undefined;
 };

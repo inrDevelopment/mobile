@@ -10,7 +10,7 @@ import {
   AuthProvider,
 } from "./src/contexts/AuthenticationContext";
 import randomDeviceKey from "./src/lib/randomDeviceKey";
-import { asyncUser } from "./src/lib/types";
+import { getUser } from "./src/lib/storage/userStorage";
 import MainNavigator from "./src/navigation/MainNavigator";
 import { registerForPushNotificationsAsync } from "./src/notifications";
 
@@ -25,17 +25,17 @@ Notifications.setNotificationHandler({
 });
 
 function AppContent() {
+  const { login, finishLoading, isLoading } = useContext(AuthContext);
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     const initialSetUp = async () => {
       try {
-        //Pegar o objeto user no AsyncStorage pra ver se o usuário já está logado.
-        const storedValue = await AsyncStorage.getItem("user");
-        const parsedValue: asyncUser = storedValue
-          ? JSON.parse(storedValue)
-          : null;
-        console.log(parsedValue);
+        const parsedValue = await getUser();
+
+        if (parsedValue?.userToken) {
+          authContext.login();
+        }
 
         //Verificar se já existe uma deviceKey salva. Se não, criar nova e salvar no AsyncStorage
         if (parsedValue && !parsedValue.deviceKey) {
@@ -59,19 +59,16 @@ function AppContent() {
 
           await axios.post(`${BASE_API}/leitor/registrar`, deviceObj);
         }
-
-        //Logar o usuário no sistema
-        if (parsedValue?.userToken) {
-          console.log("Token encontrado, logando...");
-          authContext.login();
-        }
       } catch (error: any) {
         console.warn(error.message);
+      } finally {
+        finishLoading();
       }
     };
 
     initialSetUp();
   }, []);
+  if (isLoading) return null;
 
   return (
     <NavigationContainer>

@@ -1,5 +1,3 @@
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
@@ -12,51 +10,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CustomCarousel from "../../components/Carousel";
 import { Container } from "../../components/Container";
-import { BASE_API_HOME, BASE_API_LAST_PUBLISHED } from "../../constants/api";
-import Colors from "../../constants/Colors";
+import {
+  BASE_API_BULLETINS_NOT_LOGGED,
+  BASE_API_GET_FAVORITES,
+} from "../../constants/api";
 import { AuthContext } from "../../contexts/AuthenticationContext";
+import { getUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import { style } from "./style";
-
-const mockData = [
-  {
-    id: 1,
-    title: "Boletim Eletrônico INR nº 12566, de 07/02/2025",
-    type: "boletim",
-  },
-  {
-    id: 2,
-    title:
-      "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
-    type: "classificador",
-  },
-  {
-    id: 3,
-    title:
-      "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
-    type: "classificador",
-  },
-  {
-    id: 4,
-    title:
-      "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
-    type: "classificador",
-  },
-  {
-    id: 5,
-    title:
-      "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
-    type: "classificador",
-  },
-  {
-    id: 6,
-    title:
-      "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12554, de 31/01/2025",
-    type: "classificador",
-  },
-];
 
 type homeScreenNavigationProp = DrawerNavigationProp<RootListType, "Home">;
 
@@ -69,43 +31,10 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [favoritos, setFavoritos] = useState<any[]>([]);
-  const [items, setItems] = useState<any>(
-    mockData.map((item: any) => ({
-      ...item,
-      isRead: false,
-      isFavorite: false,
-    }))
-  );
-  const [banners, setBanners] = useState<any[]>([]);
 
   const [lastItems, setLastItems] = useState<any[]>([]);
 
-  const toggleRead = (id: number) => {
-    if (!isLoggedIn) {
-      setIsModalVisible(true);
-      return;
-    }
-    setItems((prevItems: any) =>
-      prevItems.map((item: any) =>
-        item.id === id ? { ...item, isRead: !item.isRead } : item
-      )
-    );
-  };
-
-  const toggleFavorite = (id: number) => {
-    if (!isLoggedIn) {
-      setIsModalVisible(true);
-      return;
-    }
-    setItems((prevItems: any) =>
-      prevItems.map((item: any) =>
-        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
-      )
-    );
-  };
-
   const isFocused = useIsFocused();
-  let tempObj: any[] = [];
 
   useEffect(() => {
     const initialSetUp = async () => {
@@ -114,70 +43,68 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
       // await AsyncStorage.multiRemove(allKeys); // Remove all keys
 
       //Pegar Banners
-      const apiFetch = await axios.get(BASE_API_HOME);
+      // const apiFetch = await axios.get(BASE_API_HOME);
 
-      if (apiFetch.data.success) {
-        const response = apiFetch.data.data;
+      // if (apiFetch.data.success) {
+      //   const response = apiFetch.data.data;
 
-        if (response.banners.length > 0) {
-          setBanners(() => response.banners);
-        }
-      }
-
+      //   if (response.banners.length > 0) {
+      //     setBanners(() => response.banners);
+      //   }
+      // }
+      let allItems = [];
       //Buscar os últimos boletins na API
-      const ultimosBoletins = await axios.get(`${BASE_API_LAST_PUBLISHED}/1`);
-      console.log("ultimosBoletins", ultimosBoletins);
+      for (let i = 1; i <= 3; i++) {
+        const lastObj = {
+          numero: null,
+          boletim_tipo_id: [i],
+          data: null,
+          limite: 1,
+          pagina: 0,
+        };
+        const ultimosBoletins = await axios.post(
+          `${BASE_API_BULLETINS_NOT_LOGGED}`,
+          lastObj
+        );
 
-      if (ultimosBoletins.data) {
-        setLastItems([]);
-        //Separar os boletins entre boletim e classificador
-        if (ultimosBoletins.data.boletim.length > 0) {
-          for (let i = 0; i < ultimosBoletins?.data?.boletim?.length; i++) {
-            tempObj.push(ultimosBoletins.data.boletim[i]);
-            setLastItems((prevState) => [
-              ...prevState,
-              {
-                content: ultimosBoletins.data.boletim[i],
-                type: "boletim",
-                id: `boletim${ultimosBoletins.data.lastBeId}`,
-              },
-            ]);
-          }
-        }
-        if (ultimosBoletins.data.classificador.length > 0) {
-          for (let i = 0; i < ultimosBoletins.data.classificador.length; i++) {
-            tempObj.push(ultimosBoletins.data.classificador[i]);
-            setLastItems((prevState) => [
-              ...prevState,
-              {
-                content: ultimosBoletins.data.classificador[i],
-                type: "classificador",
-                id: `classificador${ultimosBoletins.data.lastClassId}`,
-              },
-            ]);
-          }
+        if (ultimosBoletins.data.success) {
+          const parsedItem = {
+            ...ultimosBoletins.data.data.list[0],
+            tipo: i,
+          };
+          allItems.push(parsedItem);
         }
       }
+      setLastItems(() => [...allItems]);
 
-      //Buscar Favoritos
-      const favoritosResponse = await AsyncStorage.getItem("Favoritos");
+      //Se usuário logado, buscar Favoritos
+      if (authContext.isLoggedIn) {
+        const parsedValue = await getUser();
 
-      if (favoritosResponse !== null) {
-        const parsed = JSON.parse(favoritosResponse);
-        //Buscar cada item dos Favoritos
-        let favoritosArray = [];
+        const searchObj = {
+          numero: null,
+          boletim_tipo_id: [1, 2, 3],
+          data: null,
+          limite: 10,
+          pagina: 0,
+        };
 
-        for (let i = 0; i < parsed.length; i++) {
-          const foundItemValue: string | null = await AsyncStorage.getItem(
-            parsed[i]
+        if (parsedValue && parsedValue.userToken) {
+          const favoritosResponse = await axios.post(
+            BASE_API_GET_FAVORITES,
+            searchObj,
+            {
+              headers: {
+                Authorization: parsedValue.userToken,
+              },
+            }
           );
-          if (foundItemValue !== null) {
-            const parsedItem = JSON.parse(foundItemValue);
-            favoritosArray.push(parsedItem);
+          console.log("favoritosResponse", favoritosResponse.data);
+
+          if (favoritosResponse.data.success) {
+            setFavoritos((prev) => [...favoritosResponse.data.data.list]);
           }
         }
-
-        setFavoritos(favoritosArray);
       }
     };
 
@@ -191,86 +118,51 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
 
   return (
     <Container>
-      {banners.length > 0 && <CustomCarousel data={banners} />}
+      {/* {banners.length > 0 && <CustomCarousel data={banners} />} */}
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         <Text style={style.title}>Últimos Boletins</Text>
-        {lastItems.map((item: any, index: number) => (
-          <View key={item.id} style={style.itemContainer}>
-            <TouchableOpacity
-              style={style.itemTouchable}
-              onPress={() => {
-                if (item.type === "boletim") {
-                  navigation.navigate("BulletimItem", { boletim: item });
-                } else {
-                  navigation.navigate("ClassificatorItem", {
-                    classificador: item,
-                  });
-                }
-              }}
-            >
-              <Text style={style.itemTitle}>{item.content.title}</Text>
-            </TouchableOpacity>
-            <View style={style.iconContainer}>
-              <TouchableOpacity onPress={() => toggleRead(item.id)}>
-                <MaterialCommunityIcons
-                  name={item.isRead ? "bookmark" : "bookmark-outline"}
-                  size={30}
-                  color={
-                    item.isRead ? Colors.primary.light : Colors.primary.dark
-                  }
-                />
-              </TouchableOpacity>
+        {lastItems.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={style.lastItems}
+            onPress={() => {
+              if (item.tipo === 1 || item.tipo === 2) {
+                console.log("Clicado em Boletim");
 
-              <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
-                <MaterialCommunityIcons
-                  name={item.isFavorite ? "cards-heart" : "cards-heart-outline"}
-                  size={30}
-                  color={item.isFavorite ? "red" : "black"}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+                navigation.navigate("BulletimItem", { boletimId: item.id });
+              } else {
+                console.log("Clicado em Classificador");
+
+                navigation.navigate("ClassificatorItem", {
+                  classificadorId: item.id,
+                });
+              }
+            }}
+          >
+            <Text style={style.itemTitle}>{item.titulo}</Text>
+          </TouchableOpacity>
         ))}
-
         <Text style={style.title}>Favoritos</Text>
 
-        {items.map((item: any, index: number) => (
-          <View key={item.id} style={style.itemContainer}>
-            <TouchableOpacity
-              style={style.itemTouchable}
-              onPress={() => {
-                if (item.type === "boletim") {
-                  navigation.navigate("BulletimItem", { boletim: item });
-                } else {
-                  navigation.navigate("ClassificatorItem", {
-                    classificador: item,
-                  });
-                }
-              }}
-            >
-              <Text style={style.itemTitle}>{item.title}</Text>
-            </TouchableOpacity>
-            <View style={style.iconContainer}>
-              <TouchableOpacity onPress={() => toggleRead(item.id)}>
-                <MaterialCommunityIcons
-                  name={item.isRead ? "bookmark" : "bookmark-outline"}
-                  size={30}
-                  color={
-                    item.isRead ? Colors.primary.light : Colors.primary.dark
+        {favoritos.length > 0 &&
+          favoritos.map((item: any, index: number) => (
+            <View key={item.id} style={style.itemContainer}>
+              <TouchableOpacity
+                style={style.itemTouchable}
+                onPress={() => {
+                  if (item.type === "boletim") {
+                    navigation.navigate("BulletimItem", { boletimId: item.id });
+                  } else {
+                    navigation.navigate("ClassificatorItem", {
+                      classificadorId: item.id,
+                    });
                   }
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
-                <MaterialCommunityIcons
-                  name={item.isFavorite ? "cards-heart" : "cards-heart-outline"}
-                  size={30}
-                  color={item.isFavorite ? "red" : "black"}
-                />
+                }}
+              >
+                <Text style={style.itemTitle}>{item.title}</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        ))}
+          ))}
       </ScrollView>
 
       <Modal

@@ -1,173 +1,109 @@
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useState } from "react";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import { useIsFocused } from "@react-navigation/native";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
-import Colors from "../../constants/Colors";
-import { styles } from "./styles";
+import { BASE_API_BULLETINS_NOT_LOGGED } from "../../constants/api";
+import { RootListType } from "../../navigation/root";
+import { style } from "./style";
 
-const ClassificatorsScreen = () => {
-  const itemsArray = [
-    {
-      id: 1,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12574, de 10/02/2025",
-    },
-    {
-      id: 2,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12575, de 11/02/2025",
-    },
-    {
-      id: 3,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12576, de 12/02/2025",
-    },
-    {
-      id: 4,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12577, de 13/02/2025",
-    },
-    {
-      id: 5,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12578, de 14/02/2025",
-    },
-    {
-      id: 6,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12574, de 10/02/2025",
-    },
-    {
-      id: 7,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12575, de 11/02/2025",
-    },
-    {
-      id: 8,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12576, de 12/02/2025",
-    },
-    {
-      id: 9,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12577, de 13/02/2025",
-    },
-    {
-      id: 10,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12578, de 14/02/2025",
-    },
-    {
-      id: 11,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12574, de 10/02/2025",
-    },
-    {
-      id: 12,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12575, de 11/02/2025",
-    },
-    {
-      id: 13,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12576, de 12/02/2025",
-    },
-    {
-      id: 14,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12577, de 13/02/2025",
-    },
-    {
-      id: 15,
-      title:
-        "Classificadores - SP/PR/RS - Boletim Eletrônico INR nº 12578, de 14/02/2025",
-    },
-  ];
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+type bulletimScreenNavigationProp = DrawerNavigationProp<
+  RootListType,
+  "Boletins"
+>;
 
-  const [items, setItems] = useState<any>(
-    itemsArray.map((item: any) => ({
-      ...item,
-      isRead: false,
-      isFavorite: false,
-    }))
-  );
+interface bulletimScreenProps {
+  navigation: bulletimScreenNavigationProp;
+}
 
-  const toggleRead = (id: number) => {
-    if (!isLoggedIn) {
-      setIsModalVisible(true);
-      return;
+const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
+  const isFocused = useIsFocused();
+  const [classificatorsList, setClassificatorsList] = useState<any[]>([]);
+  const [page, setPage] = useState<number>(0);
+
+  useEffect(() => {
+    const initialSetup = async () => {
+      setPage(() => 0);
+      //Buscar os boletins na API
+      const bulletimObj = {
+        numero: null,
+        boletim_tipo_id: [3],
+        data: null,
+        limite: 2,
+        pagina: page,
+      };
+      const classificators = await axios.post(
+        `${BASE_API_BULLETINS_NOT_LOGGED}`,
+        bulletimObj
+      );
+      if (classificators.data.success) {
+        setClassificatorsList(() => [...classificators.data.data.list]);
+      }
+    };
+
+    initialSetup();
+
+    if (isFocused) {
+      //Buscar Favoritos
+      initialSetup();
     }
-    setItems((prevItems: any) =>
-      prevItems.map((item: any) =>
-        item.id === id ? { ...item, isRead: !item.isRead } : item
-      )
-    );
-  };
+  }, []);
 
-  const toggleFavorite = (id: number) => {
-    if (!isLoggedIn) {
-      setIsModalVisible(true);
-      return;
-    }
-    setItems((prevItems: any) =>
-      prevItems.map((item: any) =>
-        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
-      )
+  const loadMoreBulletins = async () => {
+    const newPage = page + 1;
+
+    const bulletimObj = {
+      numero: null,
+      boletim_tipo_id: [3],
+      data: null,
+      limite: 2,
+      pagina: newPage,
+    };
+    const boletins = await axios.post(
+      `${BASE_API_BULLETINS_NOT_LOGGED}`,
+      bulletimObj
     );
+    if (boletins.data.success) {
+      const newBulletins = boletins.data.data.list;
+
+      const filteredBulletins = newBulletins.filter(
+        (novo: any) => !classificatorsList.some((item) => item.id === novo.id)
+      );
+
+      setClassificatorsList((prev) => [...prev, ...filteredBulletins]);
+
+      setPage(newPage);
+    }
   };
 
   return (
     <Container>
-      <ScrollView style={{ marginBottom: 20 }}>
-        {items.map((item: any, index: number) => {
-          return (
-            <View
-              key={`${Math.floor(Math.random() * 999) + 1}-${index}`}
-              style={styles.itemContainer}
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+        <Text style={style.title}>Últimas Publicações</Text>
+        {classificatorsList.map((item: any, index: number) => (
+          <View key={item.id} style={style.itemContainer}>
+            <TouchableOpacity
+              style={style.itemTouchable}
+              onPress={() => {
+                navigation.navigate("ClassificatorItem", {
+                  classificadorId: item.id,
+                });
+              }}
             >
-              <TouchableOpacity
-                style={styles.itemTouchable}
-                // onPress={() => {
-                //   if (item.type === "boletim") {
-                //     navigation.navigate("BoletimItem", { boletim: item });
-                //   } else {
-                //     navigation.navigate("ClassificadorItem", {
-                //       classificador: item,
-                //     });
-                //   }
-                // }}
-              >
-                <Text style={styles.itemTitle}>{item.title}</Text>
-              </TouchableOpacity>
-              <View style={styles.iconContainer}>
-                <TouchableOpacity onPress={() => toggleRead(item.id)}>
-                  <MaterialCommunityIcons
-                    name={item.isRead ? "bookmark" : "bookmark-outline"}
-                    size={30}
-                    color={
-                      item.isRead ? Colors.primary.light : Colors.primary.dark
-                    }
-                  />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
-                  <MaterialCommunityIcons
-                    name={
-                      item.isFavorite ? "cards-heart" : "cards-heart-outline"
-                    }
-                    size={30}
-                    color={item.isFavorite ? "red" : "black"}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          );
-        })}
+              <Text style={style.itemTitle}>{item.titulo}</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        <TouchableOpacity
+          style={style.buttonContainer}
+          onPress={loadMoreBulletins}
+        >
+          <Text style={style.buttonText}>Clique Aqui para ver mais</Text>
+        </TouchableOpacity>
       </ScrollView>
     </Container>
   );
 };
 
-export default ClassificatorsScreen;
+export default BulletinsScreen;

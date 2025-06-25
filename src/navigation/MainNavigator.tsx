@@ -11,11 +11,11 @@ import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Colors from "../constants/Colors";
 import { constant } from "../constants/constants";
 import { AuthContext } from "../contexts/AuthenticationContext";
+import { clearUser } from "../lib/storage/userStorage";
 import BulletimItem from "../screens/BulletimItem";
 import BulletinsScreen from "../screens/Bulletins";
 import ClassificatorItem from "../screens/ClassificatorItem";
 import ClassificatorsScreen from "../screens/Classificators";
-import FaqScreen from "../screens/FAQ";
 import FavoritesScreen from "../screens/Favorites";
 import HomeScreen from "../screens/Home";
 import LoginScreen from "../screens/Login";
@@ -187,7 +187,7 @@ const MainNavigator = () => {
           },
         }}
       />
-      <Drawer.Screen
+      {/* <Drawer.Screen
         name="Ajuda"
         component={FaqScreen}
         options={{
@@ -205,7 +205,7 @@ const MainNavigator = () => {
             fontSize: 20,
           },
         }}
-      />
+      /> */}
       <Drawer.Screen
         name="Sair"
         children={() => null}
@@ -227,6 +227,7 @@ const MainNavigator = () => {
         listeners={{
           focus: () => {
             authContext.logout();
+            clearUser();
             navigation.navigate("Home" as never);
           },
         }}
