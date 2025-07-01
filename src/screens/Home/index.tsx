@@ -99,7 +99,6 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
               },
             }
           );
-          console.log("favoritosResponse", favoritosResponse.data);
 
           if (favoritosResponse.data.success) {
             setFavoritos((prev) => [...favoritosResponse.data.data.list]);

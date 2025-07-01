@@ -1,33 +1,26 @@
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 // import { contentType } from "../../types";
 // import ClickableItem from "../ClickableItem";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 import { RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ClickableItem from "../../components/ClickableItem";
 import { Container } from "../../components/Container";
 import Colors from "../../constants/Colors";
+import { AuthContext } from "../../contexts/AuthenticationContext";
+import { getUser } from "../../lib/storage/userStorage";
 import { contentType } from "../../lib/types";
 import { RootListType } from "../../navigation/root";
 import { styles } from "./styles";
-
-// interface classificatorProps {
-//   content: {
-//     title: string;
-//     contents: contentType[];
-//   };
-//   data: {
-//     title: string;
-//     data: string;
-//     spAcumulado?: string;
-//     spTitle: string;
-//     prTitle: string;
-//     rsTitle: string;
-//     contents: contentType[];
-//   };
-// }
 
 type ClassificatorItemRouteProp = RouteProp<
   { ClassificatorItem: { classificadorId: number } },
@@ -39,45 +32,165 @@ export default function ClassificatorItem({ navigation }: Props) {
   const route = useRoute<ClassificatorItemRouteProp>();
   const { classificadorId } = route.params;
   const [sections, setSections] = useState<Record<string, contentType[]>>({});
+  const [user, setUser] = useState<any>({});
   const [classificador, setClassificador] = useState<any>({});
   const isFocused = useIsFocused();
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     const initialSetup = async () => {
-      const apiResponse = await axios.get(
-        `https://api.publicacoesinr.com.br/leitor/ler?id=${classificadorId}`
-      );
-      console.log(apiResponse.data.data.conteudo);
+      if (!authContext.isLoggedIn) {
+        const apiResponse = await axios.get(
+          `https://api.publicacoesinr.com.br/leitor/ler/publico?id=${classificadorId}`
+        );
 
-      setClassificador(() => apiResponse.data.data);
+        setClassificador(() => apiResponse.data.data);
+      } else {
+        const storedUser = await getUser();
+        setUser(storedUser);
+        const apiResponse = await axios.get(
+          `https://api.publicacoesinr.com.br/leitor/ler/privado?id=${classificadorId}`,
+          {
+            headers: {
+              credential: storedUser.userToken,
+            },
+          }
+        );
+        if (apiResponse.data.success) {
+          console.log("apiResponse", apiResponse.data.data);
+
+          setClassificador(() => ({
+            ...apiResponse.data.data,
+            lido: true,
+            favorito: apiResponse.data.data.favorito,
+          }));
+
+          const readResponse = await axios.get(
+            `https://api.publicacoesinr.com.br/leitor/leitura/${apiResponse.data.data.id}/adicionar`,
+            {
+              headers: {
+                credential: storedUser.userToken,
+              },
+            }
+          );
+
+          // setBoletim((prev: any) => ({ ...prev, lido: true }));
+        } else {
+          navigation.navigate("Home");
+        }
+      }
     };
     initialSetup();
-    navigation.setOptions({
-      headerTitle: `Classificadores INR`,
-      headerRight: () => (
-        <View style={{ flexDirection: "row" }}>
-          <TouchableOpacity style={{ marginRight: 15 }}>
-            <MaterialCommunityIcons
-              name="bookmark-outline"
-              size={30}
-              color={Colors.primary.dark}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ marginRight: 15 }}>
-            <MaterialCommunityIcons
-              name="cards-heart-outline"
-              size={30}
-              color={Colors.primary.dark}
-            />
-          </TouchableOpacity>
-        </View>
-      ),
-    });
+
     if (isFocused) {
       //Buscar Favoritos
       initialSetup();
     }
   }, []);
+
+  const toggleRead = async () => {
+    if (!authContext.isLoggedIn) {
+      Alert.alert("Erro", "Você precisa estar logado para usar esta opção.");
+      return;
+    }
+
+    try {
+      if (classificador.lido) {
+        const readResponse = await axios.delete(
+          `https://api.publicacoesinr.com.br/leitor/leitura/${classificador.id}/remover`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        setClassificador((prev: any) => ({ ...prev, lido: false }));
+        Alert.alert("Atenção", "Classificador marcado como não lido");
+      } else {
+        const readResponse = await axios.get(
+          `https://api.publicacoesinr.com.br/leitor/leitura/${classificador.id}/adicionar`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        setClassificador((prev: any) => ({ ...prev, lido: true }));
+        Alert.alert("Atenção", "Classificador marcado como lido");
+      }
+    } catch (error) {
+      console.warn("Erro ao registrar leitura:", error);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!authContext.isLoggedIn) {
+      Alert.alert("Erro", "Você precisa estar logado para usar esta opção.");
+      return;
+    }
+
+    try {
+      if (!classificador.favorito) {
+        const readResponse = await axios.get(
+          `https://api.publicacoesinr.com.br/leitor/favorito/${classificador.id}/adicionar`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        if (readResponse.data.success) {
+          setClassificador((prev: any) => ({ ...prev, favorito: true }));
+          Alert.alert("Atenção", "Classificador adicionado aos favoritos.");
+        }
+      } else {
+        const readResponse = await axios.delete(
+          `https://api.publicacoesinr.com.br/leitor/favorito/${classificador.id}/remover`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        if (readResponse.data.success) {
+          setClassificador((prev: any) => ({ ...prev, favorito: false }));
+          Alert.alert("Atenção", "Classificador removido dos favoritos.");
+        }
+      }
+    } catch (error) {
+      console.warn("Erro ao registrar leitura:", error);
+      Alert.alert("Erro ao favoritar conteúdo. Por favor, tente novamente.");
+    }
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: `Classificadores INR`,
+      headerRight: () => (
+        <View style={{ flexDirection: "row" }}>
+          <TouchableOpacity style={{ marginRight: 15 }} onPress={toggleRead}>
+            <MaterialCommunityIcons
+              name={classificador.lido ? "bookmark" : "bookmark-outline"}
+              size={30}
+              color={Colors.primary.title}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ marginRight: 15 }}
+            onPress={toggleFavorite}
+          >
+            <MaterialCommunityIcons
+              name={
+                classificador.favorito ? "cards-heart" : "cards-heart-outline"
+              }
+              size={30}
+              color={classificador.favorito ? "red" : Colors.primary.title}
+            />
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [classificador.lido, classificador.favorito]);
 
   useEffect(() => {
     if (!classificador?.conteudo) return;

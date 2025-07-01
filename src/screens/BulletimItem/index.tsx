@@ -38,7 +38,7 @@ const BulletimItem = ({ navigation }: Props) => {
     const initialSetup = async () => {
       if (!authContext.isLoggedIn) {
         const apiResponse = await axios.get(
-          `https://api.publicacoesinr.com.br/leitor/ler?id=${boletimId}`
+          `https://api.publicacoesinr.com.br/leitor/ler/publico?id=${boletimId}`
         );
 
         setBoletim(() => apiResponse.data.data);
@@ -46,19 +46,35 @@ const BulletimItem = ({ navigation }: Props) => {
         const storedUser = await getUser();
         setUser(storedUser);
         const apiResponse = await axios.get(
-          `https://api.publicacoesinr.com.br/leitor/ler?id=${boletimId}`,
+          `https://api.publicacoesinr.com.br/leitor/ler/privado?id=${boletimId}`,
           {
             headers: {
-              Authorization: storedUser.userToken,
+              credential: storedUser.userToken,
             },
           }
         );
+        if (apiResponse.data.success) {
+          console.log("apiResponse", apiResponse.data.data);
 
-        setBoletim(() => ({
-          ...apiResponse.data.data,
-          lido: false,
-          favorito: false,
-        }));
+          setBoletim(() => ({
+            ...apiResponse.data.data,
+            lido: true,
+            favorito: apiResponse.data.data.favorito,
+          }));
+
+          const readResponse = await axios.get(
+            `https://api.publicacoesinr.com.br/leitor/leitura/${apiResponse.data.data.id}/adicionar`,
+            {
+              headers: {
+                credential: storedUser.userToken,
+              },
+            }
+          );
+
+          // setBoletim((prev: any) => ({ ...prev, lido: true }));
+        } else {
+          navigation.navigate("Home");
+        }
       }
     };
     initialSetup();
@@ -122,17 +138,28 @@ const BulletimItem = ({ navigation }: Props) => {
     }
 
     try {
-      const readResponse = await axios.get(
-        `https://api.publicacoesinr.com.br/leitor/leitura/${boletim.id}/adicionar`,
-        {
-          headers: {
-            Authorization: user.userToken,
-          },
-        }
-      );
-      if (readResponse.data.success) {
-        console.log("Sucesso");
-        setBoletim((prev: any) => ({ ...prev, lido: !prev.lido }));
+      if (boletim.lido) {
+        const readResponse = await axios.delete(
+          `https://api.publicacoesinr.com.br/leitor/leitura/${boletim.id}/remover`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        setBoletim((prev: any) => ({ ...prev, lido: false }));
+        Alert.alert("Atenção", "Boletim marcado como não lido");
+      } else {
+        const readResponse = await axios.get(
+          `https://api.publicacoesinr.com.br/leitor/leitura/${boletim.id}/adicionar`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        setBoletim((prev: any) => ({ ...prev, lido: true }));
+        Alert.alert("Atenção", "Boletim marcado como lido");
       }
     } catch (error) {
       console.warn("Erro ao registrar leitura:", error);
@@ -146,18 +173,32 @@ const BulletimItem = ({ navigation }: Props) => {
     }
 
     try {
-      const readResponse = await axios.get(
-        `https://api.publicacoesinr.com.br/leitor/favorito/${boletim.id}/adicionar`,
-        {
-          headers: {
-            Authorization: user.userToken,
-          },
+      if (!boletim.favorito) {
+        const readResponse = await axios.get(
+          `https://api.publicacoesinr.com.br/leitor/favorito/${boletim.id}/adicionar`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        if (readResponse.data.success) {
+          setBoletim((prev: any) => ({ ...prev, favorito: true }));
+          Alert.alert("Atenção", "Boletim adicionado aos favoritos.");
         }
-      );
-      if (readResponse.data.success) {
-        console.log("Sucesso");
-        // Somente usuários logados chegam aqui
-        setBoletim((prev: any) => ({ ...prev, favorito: !prev.favorito }));
+      } else {
+        const readResponse = await axios.delete(
+          `https://api.publicacoesinr.com.br/leitor/favorito/${boletim.id}/remover`,
+          {
+            headers: {
+              credential: user.userToken,
+            },
+          }
+        );
+        if (readResponse.data.success) {
+          setBoletim((prev: any) => ({ ...prev, favorito: false }));
+          Alert.alert("Atenção", "Boletim removido dos favoritos.");
+        }
       }
     } catch (error) {
       console.warn("Erro ao registrar leitura:", error);
@@ -170,6 +211,7 @@ const BulletimItem = ({ navigation }: Props) => {
       <View style={styles.manTitleContainer}>
         <Text style={styles.mainTitle}>{boletim.titulo}</Text>
         <Text style={styles.mainTitle}>ISSN 1983-1228</Text>
+        <Text style={styles.mainTitle}>{JSON.stringify(boletim.lido)}</Text>
       </View>
 
       <ScrollView style={{ marginBottom: 30 }}>

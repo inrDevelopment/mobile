@@ -1,9 +1,14 @@
 const BASE_API = `https://api.publicacoesinr.com.br`;
-const BASE_API_USER = `https://api.publicacoesinr.com.br/leitor/autenticacao`;
+
+const BASE_API_USER = `https://api.publicacoesinr.com.br/seguranca/autenticacao/app`;
+
 const BASE_API_LAST_PUBLISHED = `https://api.publicacoesinr.com.br/leitor/ultimo-boletim`;
+
 const BASE_API_BULLETINS_LOGGED = `https://api.publicacoesinr.com.br/leitor/boletims/privado`;
 const BASE_API_BULLETINS_NOT_LOGGED = `https://api.publicacoesinr.com.br/leitor/boletims/publico`;
+
 const BASE_API_GET_BULLETINS = `https://api.publicacoesinr.com.br/leitor/ler?id=`;
+
 const BASE_API_GET_FAVORITES = `https://api.publicacoesinr.com.br/leitor/favorito`;
 
 const EXPO_PUSH = `https://exp.host/--/api/v2/push/send`;

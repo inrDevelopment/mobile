@@ -1,5 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from "@react-navigation/native";
 import axios from "axios";
 import * as Notifications from "expo-notifications";
 import { useContext, useEffect, useState } from "react";
@@ -27,6 +30,7 @@ Notifications.setNotificationHandler({
 function AppContent() {
   const { login, finishLoading, isLoading } = useContext(AuthContext);
   const authContext = useContext(AuthContext);
+  const navigationRef = useNavigationContainerRef();
 
   useEffect(() => {
     const initialSetUp = async () => {
@@ -48,13 +52,17 @@ function AppContent() {
         }
 
         //Fazer registro do PushToken na Expo
-        await registerForPushNotificationsAsync();
+        const expoPushTokenResponse = await registerForPushNotificationsAsync();
 
         //Registrar o deviceToken e o ExpoPushToken na API
-        if (parsedValue && parsedValue.deviceKey && parsedValue.expoPushToken) {
+        if (
+          parsedValue &&
+          parsedValue.deviceKey &&
+          expoPushTokenResponse?.data
+        ) {
           const deviceObj = {
             uuid: parsedValue.deviceKey,
-            token: parsedValue.expoPushToken,
+            token: expoPushTokenResponse?.data,
           };
 
           await axios.post(`${BASE_API}/leitor/registrar`, deviceObj);
@@ -68,6 +76,23 @@ function AppContent() {
 
     initialSetUp();
   }, []);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log("🔔 Notificação clicada:", response);
+
+        if (navigationRef.isReady()) {
+          console.log("Rota atual:", navigationRef.getCurrentRoute());
+
+          navigationRef.navigate("Home" as never);
+        }
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
+
   if (isLoading) return null;
 
   return (

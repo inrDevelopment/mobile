@@ -5,7 +5,6 @@ const STORAGE_KEY = "user";
 
 export const getUser = async (): Promise<asyncUser> => {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);
-  console.log("stored", stored);
 
   try {
     return stored ? JSON.parse(stored) : {};
