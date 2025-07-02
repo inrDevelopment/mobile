@@ -80,11 +80,7 @@ function AppContent() {
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
-        console.log("🔔 Notificação clicada:", response);
-
         if (navigationRef.isReady()) {
-          console.log("Rota atual:", navigationRef.getCurrentRoute());
-
           navigationRef.navigate("Home" as never);
         }
       }

@@ -31,14 +31,12 @@ const MainNavigator = () => {
   useEffect(() => {
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) {
-        console.log("App aberto por notificação:", response);
         navigation.navigate("Home" as never);
       }
     });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notificação clicada:", response);
         navigation.navigate("Home" as never);
       });
 

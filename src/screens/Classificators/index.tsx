@@ -30,7 +30,7 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
         numero: null,
         boletim_tipo_id: [3],
         data: null,
-        limite: 2,
+        limite: 10,
         pagina: page,
       };
       const classificators = await axios.post(
@@ -45,7 +45,6 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
     initialSetup();
 
     if (isFocused) {
-      //Buscar Favoritos
       initialSetup();
     }
   }, []);
@@ -57,7 +56,7 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
       numero: null,
       boletim_tipo_id: [3],
       data: null,
-      limite: 2,
+      limite: 10,
       pagina: newPage,
     };
     const boletins = await axios.post(

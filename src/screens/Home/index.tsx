@@ -95,7 +95,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
             searchObj,
             {
               headers: {
-                Authorization: parsedValue.userToken,
+                credential: parsedValue.userToken,
               },
             }
           );
@@ -126,12 +126,8 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
             style={style.lastItems}
             onPress={() => {
               if (item.tipo === 1 || item.tipo === 2) {
-                console.log("Clicado em Boletim");
-
                 navigation.navigate("BulletimItem", { boletimId: item.id });
               } else {
-                console.log("Clicado em Classificador");
-
                 navigation.navigate("ClassificatorItem", {
                   classificadorId: item.id,
                 });
@@ -149,7 +145,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
               <TouchableOpacity
                 style={style.itemTouchable}
                 onPress={() => {
-                  if (item.type === "boletim") {
+                  if (item.tipo === 1 || item.tipo === 2) {
                     navigation.navigate("BulletimItem", { boletimId: item.id });
                   } else {
                     navigation.navigate("ClassificatorItem", {
@@ -158,7 +154,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
                   }
                 }}
               >
-                <Text style={style.itemTitle}>{item.title}</Text>
+                <Text style={style.itemTitle}>{item.titulo}</Text>
               </TouchableOpacity>
             </View>
           ))}

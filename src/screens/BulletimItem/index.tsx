@@ -54,8 +54,6 @@ const BulletimItem = ({ navigation }: Props) => {
           }
         );
         if (apiResponse.data.success) {
-          console.log("apiResponse", apiResponse.data.data);
-
           setBoletim(() => ({
             ...apiResponse.data.data,
             lido: true,

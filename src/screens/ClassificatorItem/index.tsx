@@ -57,8 +57,6 @@ export default function ClassificatorItem({ navigation }: Props) {
           }
         );
         if (apiResponse.data.success) {
-          console.log("apiResponse", apiResponse.data.data);
-
           setClassificador(() => ({
             ...apiResponse.data.data,
             lido: true,
