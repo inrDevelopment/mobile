@@ -6,4 +6,5 @@ export type RootListType = {
   ClassificatorItem: { classificadorId: number };
   LogIn: undefined;
   RetrievePassword: undefined;
+  Favorites: undefined;
 };

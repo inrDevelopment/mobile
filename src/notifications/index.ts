@@ -14,11 +14,11 @@ export async function registerForPushNotificationsAsync(): Promise<
       return { success: false };
     }
 
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    const { status } = await Notifications.getPermissionsAsync();
 
-    if (existingStatus !== "granted") {
+    let finalStatus = status;
+
+    if (status !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
@@ -54,7 +54,7 @@ export async function registerForPushNotificationsAsync(): Promise<
       await AsyncStorage.setItem("user", JSON.stringify(updatedValue));
     }
 
-    return { success: true };
+    return { success: true, data: newToken };
   } catch (error: any) {
     console.warn(error.message);
   }
