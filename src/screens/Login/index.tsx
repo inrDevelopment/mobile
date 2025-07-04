@@ -1,6 +1,7 @@
 import { FontAwesome, Ionicons, Octicons } from "@expo/vector-icons";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 import axios from "axios";
+import { Image as ExpoImage } from "expo-image";
 import React, { useContext, useEffect, useState } from "react";
 import {
   Alert,
@@ -89,8 +90,8 @@ const LoginScreen = ({ navigation }: Props) => {
     <Container>
       {loading ? (
         <View style={styles.gifContainer}>
-          <Image
-            source={require("../../../assets/images/Loading.gif")}
+          <ExpoImage
+            source={require("../../../assets/loading.gif")}
             style={styles.gif}
           />
         </View>

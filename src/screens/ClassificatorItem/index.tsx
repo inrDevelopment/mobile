@@ -12,6 +12,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 import { RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
 import axios from "axios";
+import { Image as ExpoImage } from "expo-image";
 import { useContext, useEffect, useState } from "react";
 import ClickableItem from "../../components/ClickableItem";
 import { Container } from "../../components/Container";
@@ -36,46 +37,54 @@ export default function ClassificatorItem({ navigation }: Props) {
   const [classificador, setClassificador] = useState<any>({});
   const isFocused = useIsFocused();
   const authContext = useContext(AuthContext);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const initialSetup = async () => {
-      if (!authContext.isLoggedIn) {
-        const apiResponse = await axios.get(
-          `https://api.publicacoesinr.com.br/leitor/ler/publico?id=${classificadorId}`
-        );
+      try {
+        setLoading(true);
+        if (!authContext.isLoggedIn) {
+          const apiResponse = await axios.get(
+            `https://api.publicacoesinr.com.br/leitor/ler/publico?id=${classificadorId}`
+          );
 
-        setClassificador(() => apiResponse.data.data);
-      } else {
-        const storedUser = await getUser();
-        setUser(storedUser);
-        const apiResponse = await axios.get(
-          `https://api.publicacoesinr.com.br/leitor/ler/privado?id=${classificadorId}`,
-          {
-            headers: {
-              credential: storedUser.userToken,
-            },
-          }
-        );
-        if (apiResponse.data.success) {
-          setClassificador(() => ({
-            ...apiResponse.data.data,
-            lido: true,
-            favorito: apiResponse.data.data.favorito,
-          }));
-
-          const readResponse = await axios.get(
-            `https://api.publicacoesinr.com.br/leitor/leitura/${apiResponse.data.data.id}/adicionar`,
+          setClassificador(() => apiResponse.data.data);
+        } else {
+          const storedUser = await getUser();
+          setUser(storedUser);
+          const apiResponse = await axios.get(
+            `https://api.publicacoesinr.com.br/leitor/ler/privado?id=${classificadorId}`,
             {
               headers: {
                 credential: storedUser.userToken,
               },
             }
           );
+          if (apiResponse.data.success) {
+            setClassificador(() => ({
+              ...apiResponse.data.data,
+              lido: true,
+              favorito: apiResponse.data.data.favorito,
+            }));
 
-          // setBoletim((prev: any) => ({ ...prev, lido: true }));
-        } else {
-          navigation.navigate("Home");
+            const readResponse = await axios.get(
+              `https://api.publicacoesinr.com.br/leitor/leitura/${apiResponse.data.data.id}/adicionar`,
+              {
+                headers: {
+                  credential: storedUser.userToken,
+                },
+              }
+            );
+
+            // setBoletim((prev: any) => ({ ...prev, lido: true }));
+          } else {
+            navigation.navigate("Home");
+          }
         }
+        setLoading(false);
+      } catch (error: any) {
+        setLoading(false);
+        console.warn(error.message);
       }
     };
     initialSetup();
@@ -207,7 +216,15 @@ export default function ClassificatorItem({ navigation }: Props) {
     setSections(categorizedItems);
   }, [classificador]);
 
-  return (
+  return loading ? (
+    <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
+      {/* <ActivityIndicator size="large" color="#0000ff" /> */}
+      <ExpoImage
+        source={require("../../../assets/loading.gif")}
+        style={{ height: 200, width: 200 }}
+      />
+    </View>
+  ) : (
     <Container>
       <View style={styles.manTitleContainer}>
         <Text style={styles.mainTitle}>{classificador.titulo}</Text>
