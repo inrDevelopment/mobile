@@ -1,15 +1,9 @@
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
+import { Image } from "expo-image";
 import { useContext, useEffect, useState } from "react";
-import {
-  Button,
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
 import {
   BASE_API_BULLETINS_NOT_LOGGED,
@@ -34,9 +28,12 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
 
   const [lastItems, setLastItems] = useState<any[]>([]);
 
+  const [loading, setLoading] = useState<boolean>(false);
+
   const isFocused = useIsFocused();
 
   useEffect(() => {
+    setLoading(true);
     const initialSetUp = async () => {
       //Limpar Async Storage
       // const allKeys = await AsyncStorage.getAllKeys(); // Get all keys from AsyncStorage
@@ -52,58 +49,65 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
       //     setBanners(() => response.banners);
       //   }
       // }
-      let allItems = [];
-      //Buscar os últimos boletins na API
-      for (let i = 1; i <= 3; i++) {
-        const lastObj = {
-          numero: null,
-          boletim_tipo_id: [i],
-          data: null,
-          limite: 1,
-          pagina: 0,
-        };
-        const ultimosBoletins = await axios.post(
-          `${BASE_API_BULLETINS_NOT_LOGGED}`,
-          lastObj
-        );
 
-        if (ultimosBoletins.data.success) {
-          const parsedItem = {
-            ...ultimosBoletins.data.data.list[0],
-            tipo: i,
+      try {
+        let allItems = [];
+        //Buscar os últimos boletins na API
+        for (let i = 1; i <= 3; i++) {
+          const lastObj = {
+            numero: null,
+            boletim_tipo_id: [i],
+            data: null,
+            limite: 1,
+            pagina: 0,
           };
-          allItems.push(parsedItem);
-        }
-      }
-      setLastItems(() => [...allItems]);
-
-      //Se usuário logado, buscar Favoritos
-      if (authContext.isLoggedIn) {
-        const parsedValue = await getUser();
-
-        const searchObj = {
-          numero: null,
-          boletim_tipo_id: [1, 2, 3],
-          data: null,
-          limite: 10,
-          pagina: 0,
-        };
-
-        if (parsedValue && parsedValue.userToken) {
-          const favoritosResponse = await axios.post(
-            BASE_API_GET_FAVORITES,
-            searchObj,
-            {
-              headers: {
-                credential: parsedValue.userToken,
-              },
-            }
+          const ultimosBoletins = await axios.post(
+            `${BASE_API_BULLETINS_NOT_LOGGED}`,
+            lastObj
           );
 
-          if (favoritosResponse.data.success) {
-            setFavoritos((prev) => [...favoritosResponse.data.data.list]);
+          if (ultimosBoletins.data.success) {
+            const parsedItem = {
+              ...ultimosBoletins.data.data.list[0],
+              tipo: i,
+            };
+            allItems.push(parsedItem);
           }
         }
+        setLastItems(() => [...allItems]);
+
+        //Se usuário logado, buscar Favoritos
+        if (authContext.isLoggedIn) {
+          const parsedValue = await getUser();
+
+          const searchObj = {
+            numero: null,
+            boletim_tipo_id: [1, 2, 3],
+            data: null,
+            limite: 10,
+            pagina: 0,
+          };
+
+          if (parsedValue && parsedValue.userToken) {
+            const favoritosResponse = await axios.post(
+              BASE_API_GET_FAVORITES,
+              searchObj,
+              {
+                headers: {
+                  credential: parsedValue.userToken,
+                },
+              }
+            );
+
+            if (favoritosResponse.data.success) {
+              setFavoritos((prev) => [...favoritosResponse.data.data.list]);
+            }
+          }
+        }
+        setLoading(false);
+      } catch (error: any) {
+        setLoading(false);
+        console.warn(error.message);
       }
     };
 
@@ -118,49 +122,61 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
   return (
     <Container>
       {/* {banners.length > 0 && <CustomCarousel data={banners} />} */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-        <Text style={style.title}>Últimos Boletins</Text>
-        {lastItems.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={style.lastItems}
-            onPress={() => {
-              if (item.tipo === 1 || item.tipo === 2) {
-                navigation.navigate("BulletimItem", { boletimId: item.id });
-              } else {
-                navigation.navigate("ClassificatorItem", {
-                  classificadorId: item.id,
-                });
-              }
-            }}
-          >
-            <Text style={style.itemTitle}>{item.titulo}</Text>
-          </TouchableOpacity>
-        ))}
-        <Text style={style.title}>Favoritos</Text>
-
-        {favoritos.length > 0 &&
-          favoritos.map((item: any, index: number) => (
-            <View key={item.id} style={style.itemContainer}>
-              <TouchableOpacity
-                style={style.itemTouchable}
-                onPress={() => {
-                  if (item.tipo === 1 || item.tipo === 2) {
-                    navigation.navigate("BulletimItem", { boletimId: item.id });
-                  } else {
-                    navigation.navigate("ClassificatorItem", {
-                      classificadorId: item.id,
-                    });
-                  }
-                }}
-              >
-                <Text style={style.itemTitle}>{item.titulo}</Text>
-              </TouchableOpacity>
-            </View>
+      {loading ? (
+        <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
+          {/* <ActivityIndicator size="large" color="#0000ff" /> */}
+          <Image
+            source={require("../../../assets/loading.gif")}
+            style={{ height: 200, width: 200 }}
+          />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+          <Text style={style.title}>Últimos Boletins</Text>
+          {lastItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={style.lastItems}
+              onPress={() => {
+                if (item.tipo === 1 || item.tipo === 2) {
+                  navigation.navigate("BulletimItem", { boletimId: item.id });
+                } else {
+                  navigation.navigate("ClassificatorItem", {
+                    classificadorId: item.id,
+                  });
+                }
+              }}
+            >
+              <Text style={style.itemTitle}>{item.titulo}</Text>
+            </TouchableOpacity>
           ))}
-      </ScrollView>
+          <Text style={style.title}>Favoritos</Text>
 
-      <Modal
+          {favoritos.length > 0 &&
+            favoritos.map((item: any, index: number) => (
+              <View key={item.id} style={style.itemContainer}>
+                <TouchableOpacity
+                  style={style.itemTouchable}
+                  onPress={() => {
+                    if (item.tipo === 1 || item.tipo === 2) {
+                      navigation.navigate("BulletimItem", {
+                        boletimId: item.id,
+                      });
+                    } else {
+                      navigation.navigate("ClassificatorItem", {
+                        classificadorId: item.id,
+                      });
+                    }
+                  }}
+                >
+                  <Text style={style.itemTitle}>{item.titulo}</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+        </ScrollView>
+      )}
+
+      {/* <Modal
         visible={isModalVisible}
         transparent
         animationType="slide"
@@ -175,7 +191,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
             <Button title="Fechar" onPress={() => setIsModalVisible(false)} />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </Container>
   );
 };

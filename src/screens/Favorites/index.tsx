@@ -1,6 +1,7 @@
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
+import { Image as ExpoImage } from "expo-image";
 import { useContext, useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
@@ -24,30 +25,38 @@ const BulletinsScreen = ({ navigation }: favoritesScreenProps) => {
   const isFocused = useIsFocused();
   const [favoritesList, setFavoritesList] = useState<any[]>([]);
   const [page, setPage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const initialSetup = async () => {
-      const user = await getUser();
-      setPage(() => 0);
-      //Buscar os boletins na API
-      const bulletimObj = {
-        numero: null,
-        boletim_tipo_id: [1, 2, 3],
-        data: null,
-        limite: 10,
-        pagina: page,
-      };
-      const favorites = await axios.post(
-        `${BASE_API_GET_FAVORITES}`,
-        bulletimObj,
-        {
-          headers: {
-            credential: user.userToken ? user.userToken : "",
-          },
+      try {
+        setLoading(true);
+        const user = await getUser();
+        setPage(() => 0);
+        //Buscar os boletins na API
+        const bulletimObj = {
+          numero: null,
+          boletim_tipo_id: [1, 2, 3],
+          data: null,
+          limite: 10,
+          pagina: page,
+        };
+        const favorites = await axios.post(
+          `${BASE_API_GET_FAVORITES}`,
+          bulletimObj,
+          {
+            headers: {
+              credential: user.userToken ? user.userToken : "",
+            },
+          }
+        );
+        if (favorites.data.success) {
+          setFavoritesList(() => [...favorites.data.data.list]);
         }
-      );
-      if (favorites.data.success) {
-        setFavoritesList(() => [...favorites.data.data.list]);
+        setLoading(false);
+      } catch (error: any) {
+        setLoading(false);
+        console.warn(error.message);
       }
     };
 
@@ -97,7 +106,15 @@ const BulletinsScreen = ({ navigation }: favoritesScreenProps) => {
     }
   };
 
-  return (
+  return loading ? (
+    <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
+      {/* <ActivityIndicator size="large" color="#0000ff" /> */}
+      <ExpoImage
+        source={require("../../../assets/loading.gif")}
+        style={{ height: 200, width: 200 }}
+      />
+    </View>
+  ) : (
     <Container>
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         {!authContext.isLoggedIn ? (
