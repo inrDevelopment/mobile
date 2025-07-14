@@ -223,7 +223,6 @@ const BulletimItem = ({ navigation }: Props) => {
       <View style={styles.manTitleContainer}>
         <Text style={styles.mainTitle}>{boletim.titulo}</Text>
         <Text style={styles.mainTitle}>ISSN 1983-1228</Text>
-        <Text style={styles.mainTitle}>{JSON.stringify(boletim.lido)}</Text>
       </View>
 
       <ScrollView style={{ marginBottom: 30 }}>
