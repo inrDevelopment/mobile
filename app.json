@@ -2,19 +2,19 @@
   "expo": {
     "name": "Leitor INR",
     "slug": "leitor-inr",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.jpg",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.jpg",
-      "resizeMode": "contain",
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#eef5f8"
     },
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "2",
+      "buildNumber": "3",
       "bundleIdentifier": "com.inrdev.leitorinr",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
