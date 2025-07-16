@@ -2,6 +2,8 @@ const BASE_API = `https://api.publicacoesinr.com.br`;
 
 const BASE_API_USER = `https://api.publicacoesinr.com.br/seguranca/autenticacao/app`;
 
+const BASE_API_REGISTER_DEVICE = `https://api.publicacoesinr.com.br/leitor/registrar`;
+
 const BASE_API_LAST_PUBLISHED = `https://api.publicacoesinr.com.br/leitor/ultimo-boletim`;
 
 const BASE_API_BULLETINS_LOGGED = `https://api.publicacoesinr.com.br/leitor/boletims/privado`;
@@ -24,6 +26,7 @@ export {
   BASE_API_GET_FAVORITES,
   BASE_API_HOME,
   BASE_API_LAST_PUBLISHED,
+  BASE_API_REGISTER_DEVICE,
   BASE_API_USER,
   EXPO_PUSH,
   IMAGE_API,
