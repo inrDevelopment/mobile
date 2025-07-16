@@ -2,7 +2,7 @@
   "expo": {
     "name": "Leitor INR",
     "slug": "leitor-inr",
-    "version": "0.3.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/store_icon.png",
     "userInterfaceStyle": "light",
