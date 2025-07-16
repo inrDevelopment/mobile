@@ -2,12 +2,14 @@
   "expo": {
     "name": "Leitor INR",
     "slug": "leitor-inr",
-    "version": "0.3.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/store_icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#ffffff"
+      "image": "./assets/splashscreen_logo.png",
+      "backgroundColor": "#ffffff",
+      "resizeMode": "cover"
     },
     "android": {
       "package": "com.inrdev.leitorinr",
