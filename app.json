@@ -4,35 +4,27 @@
     "slug": "leitor-inr",
     "version": "0.3.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "adaptiveIcon": "./assets/adaptive-icon.png",
+    "icon": "./assets/store_icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
-      "backgroundColor": "#fff",
-      "resizeMode": "cover"
+      "backgroundColor": "#ffffff"
+    },
+    "android": {
+      "package": "com.inrdev.leitorinr",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
     },
     "ios": {
-      "supportsTablet": true,
-      "buildNumber": "3",
       "bundleIdentifier": "com.inrdev.leitorinr",
+      "buildNumber": "3",
+      "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserTrackingUsageDescription": "Este identificador será usado para enviar notificações.",
         "UIBackgroundModes": ["remote-notification"]
       }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.inrdev.leitorinr",
-      "permissions": ["NOTIFICATIONS"]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
