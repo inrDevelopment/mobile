@@ -46,10 +46,11 @@ const BulletinsScreen = ({ navigation }: favoritesScreenProps) => {
           bulletimObj,
           {
             headers: {
-              credential: user.userToken ? user.userToken : "",
+              credential: user.userToken,
             },
           }
         );
+
         if (favorites.data.success) {
           setFavoritesList(() => [...favorites.data.data.list]);
         }
@@ -66,7 +67,7 @@ const BulletinsScreen = ({ navigation }: favoritesScreenProps) => {
       //Buscar Favoritos
       initialSetup();
     }
-  }, []);
+  }, [isFocused]);
 
   const loadMoreFavorites = async () => {
     const newPage = page + 1;
