@@ -9,15 +9,23 @@
         "buildType": "app-bundle",
         "distribution": "store"
       },
+      "ios": {
+        "distribution": "store"
+      },
       "autoIncrement": true
     },
     "preview": {
       "android": {
         "buildType": "apk"
-      }
+      },
+      "ios": {}
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "alcides@inr.com.br"
+      }
+    }
   }
 }

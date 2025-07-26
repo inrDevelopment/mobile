@@ -6,6 +6,7 @@ import { Image as ExpoImage } from "expo-image";
 import { useContext, useEffect, useState } from "react";
 import {
   Alert,
+  Dimensions,
   Image,
   ScrollView,
   Text,
@@ -255,7 +256,11 @@ const Section = ({ tipo, items }: { tipo: string; items: any }) => {
     <View style={styles.bannerContainer}>
       <Image
         source={imagesMap[tipo]}
-        style={{ width: "100%", resizeMode: "contain" }}
+        style={{
+          width: "100%",
+          height: Dimensions.get("window").width * 0.35,
+          resizeMode: "contain",
+        }}
       />
       <View
         style={{

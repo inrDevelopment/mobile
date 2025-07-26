@@ -14,6 +14,7 @@ import { RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
 import { useContext, useEffect, useState } from "react";
+import { Dimensions } from "react-native";
 import ClickableItem from "../../components/ClickableItem";
 import { Container } from "../../components/Container";
 import Colors from "../../constants/Colors";
@@ -260,7 +261,11 @@ const Section = ({ tipo, items }: { tipo: string; items: contentType[] }) => {
     <View style={styles.bannerContainer}>
       <Image
         source={imageMap[tipo]}
-        style={{ width: "100%", resizeMode: "contain" }}
+        style={{
+          width: "100%",
+          height: Dimensions.get("window").width * 0.35,
+          resizeMode: "contain",
+        }}
       />
       <View
         style={{
