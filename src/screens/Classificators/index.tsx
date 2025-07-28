@@ -3,7 +3,7 @@ import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
 import { BASE_API_BULLETINS_NOT_LOGGED } from "../../constants/api";
 import { RootListType } from "../../navigation/root";
@@ -39,7 +39,8 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
         };
         const classificators = await axios.post(
           `${BASE_API_BULLETINS_NOT_LOGGED}`,
-          bulletimObj
+          bulletimObj,
+          { timeout: 20000 }
         );
         if (classificators.data.success) {
           setClassificatorsList(() => [...classificators.data.data.list]);
@@ -47,7 +48,21 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
         setLoading(false);
       } catch (error: any) {
         setLoading(false);
-        console.warn(error.message);
+
+        if (error.code === "ECONNABORTED") {
+          Alert.alert(
+            "Erro de conexão",
+            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          );
+        } else {
+          Alert.alert(
+            "Erro",
+            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          );
+        }
+
+        console.warn("Erro no initialSetUp:", error.message);
+        return;
       }
     };
 
@@ -59,29 +74,49 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
   }, []);
 
   const loadMoreBulletins = async () => {
-    const newPage = page + 1;
+    try {
+      const newPage = page + 1;
 
-    const bulletimObj = {
-      numero: null,
-      boletim_tipo_id: [3],
-      data: null,
-      limite: 10,
-      pagina: newPage,
-    };
-    const boletins = await axios.post(
-      `${BASE_API_BULLETINS_NOT_LOGGED}`,
-      bulletimObj
-    );
-    if (boletins.data.success) {
-      const newBulletins = boletins.data.data.list;
-
-      const filteredBulletins = newBulletins.filter(
-        (novo: any) => !classificatorsList.some((item) => item.id === novo.id)
+      const bulletimObj = {
+        numero: null,
+        boletim_tipo_id: [3],
+        data: null,
+        limite: 10,
+        pagina: newPage,
+      };
+      const boletins = await axios.post(
+        `${BASE_API_BULLETINS_NOT_LOGGED}`,
+        bulletimObj,
+        { timeout: 20000 }
       );
+      if (boletins.data.success) {
+        const newBulletins = boletins.data.data.list;
 
-      setClassificatorsList((prev) => [...prev, ...filteredBulletins]);
+        const filteredBulletins = newBulletins.filter(
+          (novo: any) => !classificatorsList.some((item) => item.id === novo.id)
+        );
 
-      setPage(newPage);
+        setClassificatorsList((prev) => [...prev, ...filteredBulletins]);
+
+        setPage(newPage);
+      }
+    } catch (error: any) {
+      setLoading(false);
+
+      if (error.code === "ECONNABORTED") {
+        Alert.alert(
+          "Erro de conexão",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      }
+
+      console.warn("Erro no initialSetUp:", error.message);
+      return;
     }
   };
 

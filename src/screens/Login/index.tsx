@@ -56,11 +56,15 @@ const LoginScreen = ({ navigation }: Props) => {
       //Pegar o deviceKey no AsyncStorage
       const parsedValue = await getUser();
 
-      const authenticationResponse = await axios.post(BASE_API_USER, {
-        uuid: parsedValue.deviceKey,
-        login: user,
-        senha: password,
-      });
+      const authenticationResponse = await axios.post(
+        BASE_API_USER,
+        {
+          uuid: parsedValue.deviceKey,
+          login: user,
+          senha: password,
+        },
+        { timeout: 20000 }
+      );
 
       if (authenticationResponse.data.success) {
         await updateUser({
@@ -82,7 +86,21 @@ const LoginScreen = ({ navigation }: Props) => {
       setLoading(false);
     } catch (error: any) {
       setLoading(false);
-      console.warn(error.message);
+
+      if (error.code === "ECONNABORTED") {
+        Alert.alert(
+          "Erro de conexão",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      }
+
+      console.warn("Erro no initialSetUp:", error.message);
+      return;
     }
   };
 

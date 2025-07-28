@@ -3,7 +3,7 @@ import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import { Image } from "expo-image";
 import { useContext, useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
 import {
   BASE_API_BULLETINS_NOT_LOGGED,
@@ -63,7 +63,8 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
           };
           const ultimosBoletins = await axios.post(
             `${BASE_API_BULLETINS_NOT_LOGGED}`,
-            lastObj
+            lastObj,
+            { timeout: 20000 }
           );
 
           if (ultimosBoletins.data.success) {
@@ -93,6 +94,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
               BASE_API_GET_FAVORITES,
               searchObj,
               {
+                timeout: 20000,
                 headers: {
                   credential: parsedValue.userToken,
                 },
@@ -107,7 +109,21 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
         setLoading(false);
       } catch (error: any) {
         setLoading(false);
-        console.warn(error.message);
+
+        if (error.code === "ECONNABORTED") {
+          Alert.alert(
+            "Erro de conexão",
+            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          );
+        } else {
+          Alert.alert(
+            "Erro",
+            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          );
+        }
+
+        console.warn("Erro no initialSetUp:", error.message);
+        return;
       }
     };
 

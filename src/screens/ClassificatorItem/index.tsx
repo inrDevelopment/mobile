@@ -46,7 +46,8 @@ export default function ClassificatorItem({ navigation }: Props) {
         setLoading(true);
         if (!authContext.isLoggedIn) {
           const apiResponse = await axios.get(
-            `https://api.publicacoesinr.com.br/leitor/ler/publico?id=${classificadorId}`
+            `https://api.publicacoesinr.com.br/leitor/ler/publico?id=${classificadorId}`,
+            { timeout: 20000 }
           );
 
           setClassificador(() => apiResponse.data.data);
@@ -56,6 +57,7 @@ export default function ClassificatorItem({ navigation }: Props) {
           const apiResponse = await axios.get(
             `https://api.publicacoesinr.com.br/leitor/ler/privado?id=${classificadorId}`,
             {
+              timeout: 20000,
               headers: {
                 credential: storedUser.userToken,
               },
@@ -71,6 +73,7 @@ export default function ClassificatorItem({ navigation }: Props) {
             const readResponse = await axios.get(
               `https://api.publicacoesinr.com.br/leitor/leitura/${apiResponse.data.data.id}/adicionar`,
               {
+                timeout: 20000,
                 headers: {
                   credential: storedUser.userToken,
                 },
@@ -85,7 +88,21 @@ export default function ClassificatorItem({ navigation }: Props) {
         setLoading(false);
       } catch (error: any) {
         setLoading(false);
-        console.warn(error.message);
+
+        if (error.code === "ECONNABORTED") {
+          Alert.alert(
+            "Erro de conexão",
+            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          );
+        } else {
+          Alert.alert(
+            "Erro",
+            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          );
+        }
+
+        console.warn("Erro no initialSetUp:", error.message);
+        return;
       }
     };
     initialSetup();
@@ -107,6 +124,7 @@ export default function ClassificatorItem({ navigation }: Props) {
         const readResponse = await axios.delete(
           `https://api.publicacoesinr.com.br/leitor/leitura/${classificador.id}/remover`,
           {
+            timeout: 20000,
             headers: {
               credential: user.userToken,
             },
@@ -118,6 +136,7 @@ export default function ClassificatorItem({ navigation }: Props) {
         const readResponse = await axios.get(
           `https://api.publicacoesinr.com.br/leitor/leitura/${classificador.id}/adicionar`,
           {
+            timeout: 20000,
             headers: {
               credential: user.userToken,
             },
@@ -126,8 +145,24 @@ export default function ClassificatorItem({ navigation }: Props) {
         setClassificador((prev: any) => ({ ...prev, lido: true }));
         Alert.alert("Atenção", "Classificador marcado como lido");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.warn("Erro ao registrar leitura:", error);
+      setLoading(false);
+
+      if (error.code === "ECONNABORTED") {
+        Alert.alert(
+          "Erro de conexão",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      }
+
+      console.warn("Erro no initialSetUp:", error.message);
+      return;
     }
   };
 
@@ -142,6 +177,7 @@ export default function ClassificatorItem({ navigation }: Props) {
         const readResponse = await axios.get(
           `https://api.publicacoesinr.com.br/leitor/favorito/${classificador.id}/adicionar`,
           {
+            timeout: 20000,
             headers: {
               credential: user.userToken,
             },
@@ -155,6 +191,7 @@ export default function ClassificatorItem({ navigation }: Props) {
         const readResponse = await axios.delete(
           `https://api.publicacoesinr.com.br/leitor/favorito/${classificador.id}/remover`,
           {
+            timeout: 20000,
             headers: {
               credential: user.userToken,
             },
@@ -165,9 +202,24 @@ export default function ClassificatorItem({ navigation }: Props) {
           Alert.alert("Atenção", "Classificador removido dos favoritos.");
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.warn("Erro ao registrar leitura:", error);
-      Alert.alert("Erro ao favoritar conteúdo. Por favor, tente novamente.");
+      setLoading(false);
+
+      if (error.code === "ECONNABORTED") {
+        Alert.alert(
+          "Erro de conexão",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+        );
+      }
+
+      console.warn("Erro no initialSetUp:", error.message);
+      return;
     }
   };
 
