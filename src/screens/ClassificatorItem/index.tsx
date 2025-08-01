@@ -13,12 +13,12 @@ import { DrawerScreenProps } from "@react-navigation/drawer";
 import { RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions } from "react-native";
 import ClickableItem from "../../components/ClickableItem";
 import { Container } from "../../components/Container";
 import Colors from "../../constants/Colors";
-import { AuthContext } from "../../contexts/AuthenticationContext";
+import { useAuth } from "../../contexts/AuthenticationContext";
 import { getUser } from "../../lib/storage/userStorage";
 import { contentType } from "../../lib/types";
 import { RootListType } from "../../navigation/root";
@@ -37,7 +37,7 @@ export default function ClassificatorItem({ navigation }: Props) {
   const [user, setUser] = useState<any>({});
   const [classificador, setClassificador] = useState<any>({});
   const isFocused = useIsFocused();
-  const authContext = useContext(AuthContext);
+  const authContext = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {

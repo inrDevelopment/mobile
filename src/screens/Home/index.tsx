@@ -2,14 +2,14 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import { Image } from "expo-image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
 import {
   BASE_API_BULLETINS_NOT_LOGGED,
   BASE_API_GET_FAVORITES,
 } from "../../constants/api";
-import { AuthContext } from "../../contexts/AuthenticationContext";
+import { useAuth } from "../../contexts/AuthenticationContext";
 import { getUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import { style } from "./style";
@@ -21,7 +21,7 @@ interface homeScreenProps {
 }
 
 const HomeScreen = ({ navigation }: homeScreenProps) => {
-  const authContext = useContext(AuthContext);
+  const authContext = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [favoritos, setFavoritos] = useState<any[]>([]);

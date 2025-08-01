@@ -3,7 +3,7 @@ import { DrawerScreenProps } from "@react-navigation/drawer";
 import { RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -16,7 +16,7 @@ import {
 import ClickableItem from "../../components/ClickableItem";
 import { Container } from "../../components/Container";
 import Colors from "../../constants/Colors";
-import { AuthContext } from "../../contexts/AuthenticationContext";
+import { useAuth } from "../../contexts/AuthenticationContext";
 import { getUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import styles from "./styles";
@@ -35,7 +35,7 @@ const BulletimItem = ({ navigation }: Props) => {
   const [loading, setLoading] = useState<boolean>();
 
   const isFocused = useIsFocused();
-  const authContext = useContext(AuthContext);
+  const authContext = useAuth();
 
   useEffect(() => {
     const initialSetup = async () => {

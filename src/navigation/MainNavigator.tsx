@@ -6,11 +6,11 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
-import { useContext, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Colors from "../constants/Colors";
 import { constant } from "../constants/constants";
-import { AuthContext } from "../contexts/AuthenticationContext";
+import { useAuth } from "../contexts/AuthenticationContext";
 import { clearUser } from "../lib/storage/userStorage";
 import BulletimItem from "../screens/BulletimItem";
 import BulletinsScreen from "../screens/Bulletins";
@@ -24,7 +24,7 @@ import { RootListType } from "./root";
 const Drawer = createDrawerNavigator();
 
 const MainNavigator = () => {
-  const authContext = useContext(AuthContext);
+  const authContext = useAuth();
   const navigation = useNavigation<NavigationProp<RootListType>>();
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 

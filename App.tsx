@@ -1,18 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import {
   NavigationContainer,
   useNavigationContainerRef,
 } from "@react-navigation/native";
 import axios from "axios";
 import * as Notifications from "expo-notifications";
-import { useContext, useEffect, useState } from "react";
+import { useEffect } from "react";
 import "react-native-gesture-handler";
+
+import { Linking, Platform } from "react-native";
 import { BASE_API_REGISTER_DEVICE } from "./src/constants/api";
-import {
-  AuthContext,
-  AuthProvider,
-} from "./src/contexts/AuthenticationContext";
+import { AuthProvider, useAuth } from "./src/contexts/AuthenticationContext";
 import randomDeviceKey from "./src/lib/randomDeviceKey";
 import { getUser } from "./src/lib/storage/userStorage";
 import MainNavigator from "./src/navigation/MainNavigator";
@@ -29,8 +27,7 @@ Notifications.setNotificationHandler({
 });
 
 function AppContent() {
-  const { login, finishLoading, isLoading } = useContext(AuthContext);
-  const authContext = useContext(AuthContext);
+  const { login, finishLoading, isLoading, token } = useAuth();
   const navigationRef = useNavigationContainerRef();
 
   useEffect(() => {
@@ -39,37 +36,29 @@ function AppContent() {
         const parsedValue = await getUser();
 
         if (parsedValue?.userToken) {
-          authContext.login();
+          login(parsedValue.userToken);
         }
 
-        //Verificar se já existe uma deviceKey salva. Se não, criar nova e salvar no AsyncStorage
+        // Verifica e cria deviceKey se não existir
         if (parsedValue && !parsedValue.deviceKey) {
           const newDeviceKey = randomDeviceKey(15);
-          if (newDeviceKey !== "") {
-            parsedValue.deviceKey = newDeviceKey;
-            const jsonValue = JSON.stringify(parsedValue);
-            await AsyncStorage.setItem("user", jsonValue);
-          }
+          parsedValue.deviceKey = newDeviceKey;
+          await AsyncStorage.setItem("user", JSON.stringify(parsedValue));
         }
 
-        //Fazer registro do PushToken na Expo
+        // Registra push token
         const expoPushTokenResponse = await registerForPushNotificationsAsync();
 
-        //Registrar o deviceToken e o ExpoPushToken na API
-        if (
-          parsedValue &&
-          parsedValue.deviceKey &&
-          expoPushTokenResponse?.data
-        ) {
+        if (parsedValue?.deviceKey && expoPushTokenResponse?.data) {
           const deviceObj = {
             uuid: parsedValue.deviceKey,
-            token: expoPushTokenResponse?.data,
+            token: expoPushTokenResponse.data,
           };
 
           await axios.post(BASE_API_REGISTER_DEVICE, deviceObj);
         }
       } catch (error: any) {
-        console.warn(error.message);
+        console.warn("Erro na inicialização:", error.message);
       } finally {
         finishLoading();
       }
@@ -79,13 +68,37 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate("Home" as never);
-        }
+    const handleNotificationResponse = (
+      response: Notifications.NotificationResponse
+    ) => {
+      if (!navigationRef.isReady()) return;
+
+      const type = response.notification.request.content.data?.type;
+
+      if (type === "novobe") {
+        navigationRef.navigate("Home" as never);
+      } else if (type === "atualizacao") {
+        const playStoreUrl =
+          "https://play.google.com/store/apps/details?id=com.inrdev.leitorinr";
+        const appStoreUrl = "https://apps.apple.com/app/6745224256";
+
+        const url = Platform.OS === "ios" ? appStoreUrl : playStoreUrl;
+
+        Linking.openURL(url).catch((err) =>
+          console.warn("Erro ao abrir loja de apps:", err)
+        );
       }
+    };
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      handleNotificationResponse
     );
+
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        handleNotificationResponse(response);
+      }
+    });
 
     return () => subscription.remove();
   }, []);
@@ -93,17 +106,13 @@ function AppContent() {
   if (isLoading) return null;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <MainNavigator />
     </NavigationContainer>
   );
 }
 
 export default function App() {
-  const [notification, setNotification] =
-    useState<Notifications.Notification | null>(null);
-  const [showSplash, setShowSplash] = useState(true);
-
   return (
     <AuthProvider>
       <AppContent />

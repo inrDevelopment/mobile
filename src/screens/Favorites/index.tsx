@@ -2,11 +2,11 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Container } from "../../components/Container";
 import { BASE_API_GET_FAVORITES } from "../../constants/api";
-import { AuthContext } from "../../contexts/AuthenticationContext";
+import { useAuth } from "../../contexts/AuthenticationContext";
 import { getUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import { style } from "./style";
@@ -21,7 +21,7 @@ interface favoritesScreenProps {
 }
 
 const BulletinsScreen = ({ navigation }: favoritesScreenProps) => {
-  const authContext = useContext(AuthContext);
+  const authContext = useAuth();
   const isFocused = useIsFocused();
   const [favoritesList, setFavoritesList] = useState<any[]>([]);
   const [page, setPage] = useState<number>(0);

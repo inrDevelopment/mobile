@@ -2,7 +2,7 @@ import { FontAwesome, Ionicons, Octicons } from "@expo/vector-icons";
 import { DrawerScreenProps } from "@react-navigation/drawer";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -17,7 +17,7 @@ import { Container } from "../../components/Container";
 import CustomIconButton from "../../components/CustomIconButton";
 import { BASE_API_USER } from "../../constants/api";
 import Colors from "../../constants/Colors";
-import { AuthContext } from "../../contexts/AuthenticationContext";
+import { useAuth } from "../../contexts/AuthenticationContext";
 import { getUser, updateUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import styles from "./styles";
@@ -25,7 +25,7 @@ import styles from "./styles";
 type Props = DrawerScreenProps<RootListType, "LogIn">;
 
 const LoginScreen = ({ navigation }: Props) => {
-  const authContext = useContext(AuthContext);
+  const authContext = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
 
   const [user, setUser] = useState<string>("");
@@ -72,7 +72,7 @@ const LoginScreen = ({ navigation }: Props) => {
         });
 
         //Fazer o login no contexto
-        authContext.login();
+        authContext.login(authenticationResponse.data.data.credential);
         navigation.navigate("Home");
       } else {
         Alert.alert(
