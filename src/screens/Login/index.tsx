@@ -7,6 +7,8 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Linking,
+  Modal,
   Text,
   TextInput,
   TouchableOpacity,
@@ -32,6 +34,8 @@ const LoginScreen = ({ navigation }: Props) => {
 
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (authContext.isLoggedIn) {
@@ -205,10 +209,11 @@ const LoginScreen = ({ navigation }: Props) => {
             style={styles.forgotView}
             duration={3000}
           >
-            <Text style={styles.forgotText}>Esqueceu a senha? </Text>
+            <Text style={styles.forgotText}>Não tem uma conta? </Text>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate("RetrievePassword");
+                // navigation.navigate("RetrievePassword");
+                setIsModalVisible(true);
               }}
             >
               <Text
@@ -223,6 +228,45 @@ const LoginScreen = ({ navigation }: Props) => {
           </Animatable.View>
         </KeyboardAvoidingView>
       )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>
+              Para solicitar uma conta, por favor entre em contato com nossa
+              central do assinante:
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL("tel:+551129590220");
+              }}
+            >
+              <Text style={styles.modalText}>Telefone: (11) 2959-0220</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL("mailto:faleconosco@inrpublicacoes.com.br");
+              }}
+            >
+              <Text style={[styles.modalText, { color: Colors.primary.title }]}>
+                faleconosco@inrpublicacoes.com.br
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.buttonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </Container>
   );
 };
