@@ -36,8 +36,8 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
     setLoading(true);
     const initialSetUp = async () => {
       //Limpar Async Storage
-      // const allKeys = await AsyncStorage.getAllKeys(); // Get all keys from AsyncStorage
-      // await AsyncStorage.multiRemove(allKeys); // Remove all keys
+      //const allKeys = await AsyncStorage.getAllKeys(); // Get all keys from AsyncStorage
+      //await AsyncStorage.multiRemove(allKeys); // Remove all keys
 
       //Pegar Banners
       // const apiFetch = await axios.get(BASE_API_HOME);

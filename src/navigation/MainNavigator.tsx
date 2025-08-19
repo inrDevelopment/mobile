@@ -6,7 +6,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Colors from "../constants/Colors";
 import { constant } from "../constants/constants";
@@ -27,25 +27,6 @@ const MainNavigator = () => {
   const authContext = useAuth();
   const navigation = useNavigation<NavigationProp<RootListType>>();
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
-
-  useEffect(() => {
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        navigation.navigate("Home" as never);
-      }
-    });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        navigation.navigate("Home" as never);
-      });
-
-    return () => {
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
-    };
-  }, []);
 
   return (
     <Drawer.Navigator
