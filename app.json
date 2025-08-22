@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["NOTIFICATIONS"]
+      "permissions": ["NOTIFICATIONS"],
+      "googleServicesFile": "./android/google-services.json"
     },
     "ios": {
       "bundleIdentifier": "com.inrdev.leitorinr",
@@ -32,6 +33,7 @@
       "eas": {
         "projectId": "70fe34f9-0ea5-4aae-9c0f-f5857e2683d5"
       }
-    }
+    },
+    "plugins": ["expo-notifications"]
   }
 }
