@@ -42,6 +42,10 @@ yarn-error.*
 
 # @end expo-cli
 
-google-services.json
+
 /ios
 /android
+
+# Firebase secrets
+leitor-inr-firebase-adminsdk-*.json
+google-services.json
