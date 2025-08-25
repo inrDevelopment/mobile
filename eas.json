@@ -7,10 +7,7 @@
     "production": {
       "android": {
         "buildType": "app-bundle",
-        "distribution": "store",
-        "env": {
-          "ANDROID_GOOGLE_SERVICES_JSON": "@ANDROID_GOOGLE_SERVICES_JSON_2"
-        }
+        "distribution": "store"
       },
       "ios": {
         "distribution": "store"
@@ -19,10 +16,7 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk",
-        "env": {
-          "ANDROID_GOOGLE_SERVICES_JSON": "@ANDROID_GOOGLE_SERVICES_JSON_2"
-        }
+        "buildType": "apk"
       },
       "ios": {}
     }

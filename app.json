@@ -2,7 +2,7 @@
   "expo": {
     "name": "Leitor INR",
     "slug": "leitor-inr",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/store_icon.png",
     "userInterfaceStyle": "light",
@@ -18,7 +18,7 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": ["NOTIFICATIONS"],
-      "googleServicesFile": "./android/google-services.json"
+      "googleServicesFile": "./google-services.json"
     },
     "ios": {
       "bundleIdentifier": "com.inrdev.leitorinr",

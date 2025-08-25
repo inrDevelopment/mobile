@@ -84,19 +84,15 @@ function AppContent() {
       });
 
       if (!tokenData?.data) {
-        Alert.alert(
-          "Token vazio",
-          "Nenhum token foi retornado do Expo (possível permissão negada ou falha de rede)."
-        );
         return null;
       }
 
-      Alert.alert("Expo Token obtido", tokenData.data);
       return tokenData.data;
     } catch (error: any) {
-      Alert.alert(
-        "Erro ao obter token",
-        `Mensagem: ${error.message}\nDetalhes: ${JSON.stringify(error)}`
+      console.warn(
+        `Erro ao obter token: ${error.message}\nDetalhes: ${JSON.stringify(
+          error
+        )}`
       );
       return null;
     }
@@ -130,7 +126,7 @@ function AppContent() {
         }
         if (newToken) await saveToken(newToken);
       } catch (error: any) {
-        Alert.alert("Erro inesperado", error.message);
+        console.warn("Erro inesperado", error.message);
       }
     };
 
