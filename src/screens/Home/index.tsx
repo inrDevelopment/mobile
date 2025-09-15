@@ -1,10 +1,11 @@
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
-import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import * as Animatable from "react-native-animatable";
 import { Container } from "../../components/Container";
+import SkeletonItem from "../../components/SkeletonView";
 import {
   BASE_API_BULLETINS_NOT_LOGGED,
   BASE_API_GET_FAVORITES,
@@ -22,195 +23,171 @@ interface homeScreenProps {
 
 const HomeScreen = ({ navigation }: homeScreenProps) => {
   const authContext = useAuth();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [favoritos, setFavoritos] = useState<any[]>([]);
-
   const [lastItems, setLastItems] = useState<any[]>([]);
-
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingLastItems, setLoadingLastItems] = useState(true);
+  const [loadingFavoritos, setLoadingFavoritos] = useState(true);
 
   const isFocused = useIsFocused();
 
-  useEffect(() => {
-    setLoading(true);
-    const initialSetUp = async () => {
-      //Limpar Async Storage
-      //const allKeys = await AsyncStorage.getAllKeys(); // Get all keys from AsyncStorage
-      //await AsyncStorage.multiRemove(allKeys); // Remove all keys
+  // Buscar últimos boletins
+  const fetchLastItems = async () => {
+    try {
+      setLoadingLastItems(true);
 
-      //Pegar Banners
-      // const apiFetch = await axios.get(BASE_API_HOME);
-
-      // if (apiFetch.data.success) {
-      //   const response = apiFetch.data.data;
-
-      //   if (response.banners.length > 0) {
-      //     setBanners(() => response.banners);
-      //   }
-      // }
-
-      try {
-        let allItems = [];
-        //Buscar os últimos boletins na API
-        for (let i = 1; i <= 3; i++) {
-          const lastObj = {
-            numero: null,
-            boletim_tipo_id: [i],
-            data: null,
-            limite: 1,
-            pagina: 0,
-          };
-          const ultimosBoletins = await axios.post(
-            `${BASE_API_BULLETINS_NOT_LOGGED}`,
-            lastObj,
+      // Executa as 3 chamadas em paralelo
+      const requests = [1, 2, 3].map((tipo) =>
+        axios
+          .post(
+            BASE_API_BULLETINS_NOT_LOGGED,
+            {
+              numero: null,
+              boletim_tipo_id: [tipo],
+              data: null,
+              limite: 1,
+              pagina: 0,
+            },
             { timeout: 20000 }
-          );
+          )
+          .then((res) =>
+            res.data.success ? { ...res.data.data.list[0], tipo } : null
+          )
+      );
 
-          if (ultimosBoletins.data.success) {
-            const parsedItem = {
-              ...ultimosBoletins.data.data.list[0],
-              tipo: i,
-            };
-            allItems.push(parsedItem);
-          }
-        }
-        setLastItems(() => [...allItems]);
+      const results = await Promise.all(requests);
 
-        //Se usuário logado, buscar Favoritos
-        if (authContext.isLoggedIn) {
-          const parsedValue = await getUser();
+      setLastItems(results.filter(Boolean) as any[]);
+    } catch (error: any) {
+      console.warn("Erro ao buscar últimos boletins:", error.message);
+      Alert.alert("Erro", "Não foi possível carregar os boletins.");
+    } finally {
+      setLoadingLastItems(false);
+    }
+  };
 
-          const searchObj = {
+  // Buscar favoritos
+  const fetchFavoritos = async () => {
+    if (!authContext.isLoggedIn) {
+      setFavoritos([]);
+      setLoadingFavoritos(false);
+      return;
+    }
+
+    try {
+      setLoadingFavoritos(true);
+      const parsedValue = await getUser();
+
+      if (parsedValue?.userToken) {
+        const response = await axios.post(
+          BASE_API_GET_FAVORITES,
+          {
             numero: null,
             boletim_tipo_id: [1, 2, 3],
             data: null,
             limite: 10,
             pagina: 0,
-          };
-
-          if (parsedValue && parsedValue.userToken) {
-            const favoritosResponse = await axios.post(
-              BASE_API_GET_FAVORITES,
-              searchObj,
-              {
-                timeout: 20000,
-                headers: {
-                  credential: parsedValue.userToken,
-                },
-              }
-            );
-
-            if (favoritosResponse.data.success) {
-              setFavoritos((prev) => [...favoritosResponse.data.data.list]);
-            }
+          },
+          {
+            timeout: 20000,
+            headers: {
+              credential: parsedValue.userToken,
+            },
           }
-        }
-        setLoading(false);
-      } catch (error: any) {
-        setLoading(false);
+        );
 
-        if (error.code === "ECONNABORTED") {
-          Alert.alert(
-            "Erro de conexão",
-            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-          );
-        } else {
-          Alert.alert(
-            "Erro",
-            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-          );
+        if (response.data.success) {
+          setFavoritos(response.data.data.list);
         }
-
-        console.warn("Erro no initialSetUp:", error.message);
-        return;
       }
-    };
+    } catch (error: any) {
+      console.warn("Erro ao buscar favoritos:", error.message);
+      Alert.alert("Erro", "Não foi possível carregar seus favoritos.");
+    } finally {
+      setLoadingFavoritos(false);
+    }
+  };
 
-    initialSetUp();
-
+  useEffect(() => {
     if (isFocused) {
-      //Buscar Favoritos
-      initialSetUp();
+      Promise.all([fetchLastItems(), fetchFavoritos()]);
     }
   }, [isFocused]);
 
   return (
     <Container>
-      {/* {banners.length > 0 && <CustomCarousel data={banners} />} */}
-      {loading ? (
-        <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
-          {/* <ActivityIndicator size="large" color="#0000ff" /> */}
-          <Image
-            source={require("../../../assets/loading.gif")}
-            style={{ height: 200, width: 200 }}
-          />
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-          <Text style={style.title}>Últimos Boletins</Text>
-          {lastItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={style.lastItems}
-              onPress={() => {
-                if (item.tipo === 1 || item.tipo === 2) {
-                  navigation.navigate("BulletimItem", { boletimId: item.id });
-                } else {
-                  navigation.navigate("ClassificatorItem", {
-                    classificadorId: item.id,
-                  });
-                }
-              }}
-            >
-              <Text style={style.itemTitle}>{item.titulo}</Text>
-            </TouchableOpacity>
-          ))}
-          <Text style={style.title}>Favoritos</Text>
-
-          {favoritos.length > 0 &&
-            favoritos.map((item: any, index: number) => (
-              <View key={item.id} style={style.itemContainer}>
-                <TouchableOpacity
-                  style={style.itemTouchable}
-                  onPress={() => {
-                    if (
-                      item.boletim_tipo_id === 1 ||
-                      item.boletim_tipo_id === 2
-                    ) {
-                      navigation.navigate("BulletimItem", {
-                        boletimId: item.id,
-                      });
-                    } else {
-                      navigation.navigate("ClassificatorItem", {
-                        classificadorId: item.id,
-                      });
-                    }
-                  }}
-                >
-                  <Text style={style.itemTitle}>{item.titulo}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-        </ScrollView>
-      )}
-
-      {/* <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={style.modalContainer}>
-          <View style={style.modalContent}>
-            <Text style={style.modalText}>
-              Você precisa estar logado fazer esta ação. Por favor, clique no
-              canto superior direito para entrar.
-            </Text>
-            <Button title="Fechar" onPress={() => setIsModalVisible(false)} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+        <Text style={style.title}>Últimos Boletins</Text>
+        {loadingLastItems ? (
+          <View>
+            <SkeletonItem width="90%" />
+            <SkeletonItem width="70%" />
+            <SkeletonItem width="85%" />
           </View>
-        </View>
-      </Modal> */}
+        ) : (
+          lastItems.map((item, index) => (
+            <Animatable.View
+              key={index}
+              animation="fadeInRight"
+              duration={3000}
+            >
+              <TouchableOpacity
+                style={style.lastItems}
+                onPress={() => {
+                  if (item.tipo === 1 || item.tipo === 2) {
+                    navigation.navigate("BulletimItem", { boletimId: item.id });
+                  } else {
+                    navigation.navigate("ClassificatorItem", {
+                      classificadorId: item.id,
+                    });
+                  }
+                }}
+              >
+                <Text style={style.itemTitle}>{item.titulo}</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+          ))
+        )}
+
+        <Text style={style.title}>Favoritos</Text>
+        {loadingFavoritos ? (
+          <View>
+            <SkeletonItem width="90%" />
+            <SkeletonItem width="70%" />
+            <SkeletonItem width="85%" />
+          </View>
+        ) : favoritos.length > 0 ? (
+          favoritos.map((item: any) => (
+            <Animatable.View
+              key={item.id}
+              style={style.itemContainer}
+              animation="fadeInLeft"
+              duration={3000}
+            >
+              <TouchableOpacity
+                style={style.itemTouchable}
+                onPress={() => {
+                  if (
+                    item.boletim_tipo_id === 1 ||
+                    item.boletim_tipo_id === 2
+                  ) {
+                    navigation.navigate("BulletimItem", {
+                      boletimId: item.id,
+                    });
+                  } else {
+                    navigation.navigate("ClassificatorItem", {
+                      classificadorId: item.id,
+                    });
+                  }
+                }}
+              >
+                <Text style={style.itemTitle}>{item.titulo}</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+          ))
+        ) : (
+          <Text>Nenhum favorito encontrado</Text>
+        )}
+      </ScrollView>
     </Container>
   );
 };

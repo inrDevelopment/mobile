@@ -17,6 +17,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "notification": {
+        "icon": "./assets/images/notificationIcons/white_64.png",
+        "color": "#ffffff"
+      },
       "permissions": ["NOTIFICATIONS"],
       "googleServicesFile": "./google-services.json"
     },

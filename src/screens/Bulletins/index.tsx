@@ -1,10 +1,11 @@
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
-import { Image } from "expo-image";
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import * as Animatable from "react-native-animatable";
 import { Container } from "../../components/Container";
+import SkeletonItem from "../../components/SkeletonView";
 import { BASE_API_BULLETINS_NOT_LOGGED } from "../../constants/api";
 import { RootListType } from "../../navigation/root";
 import { style } from "./style";
@@ -25,54 +26,51 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    let cancelTokenSource = axios.CancelToken.source();
+
     const initialSetup = async () => {
       try {
         setLoading(true);
-        setPage(() => 0);
-        //Buscar os boletins na API
+        setPage(0);
+
         const bulletimObj = {
           numero: null,
           boletim_tipo_id: [1, 2],
           data: null,
           limite: 10,
-          pagina: page,
+          pagina: 0,
         };
-        const boletins = await axios.post(
-          `${BASE_API_BULLETINS_NOT_LOGGED}`,
-          bulletimObj,
-          { timeout: 20000 }
-        );
-        if (boletins.data.success) {
-          setBoletimList(() => [...boletins.data.data.list]);
-        }
-        setLoading(false);
-      } catch (error: any) {
-        setLoading(false);
 
-        if (error.code === "ECONNABORTED") {
-          Alert.alert(
-            "Erro de conexão",
-            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-          );
+        const boletins = await axios.post(
+          BASE_API_BULLETINS_NOT_LOGGED,
+          bulletimObj,
+          { timeout: 20000, cancelToken: cancelTokenSource.token }
+        );
+
+        if (boletins.data.success) {
+          setBoletimList(boletins.data.data.list);
+        }
+      } catch (error: any) {
+        if (axios.isCancel(error)) {
+          console.log("Requisição cancelada:", error.message);
         } else {
           Alert.alert(
             "Erro",
             "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
           );
+          console.warn("Erro no initialSetup:", error.message);
         }
-
-        console.warn("Erro no initialSetUp:", error.message);
-        return;
+      } finally {
+        setLoading(false);
       }
     };
 
     initialSetup();
 
-    if (isFocused) {
-      //Buscar Favoritos
-      initialSetup();
-    }
-  }, []);
+    return () => {
+      cancelTokenSource.cancel("Componente desmontado");
+    };
+  }, [isFocused]);
 
   const loadMoreBulletins = async () => {
     try {
@@ -85,73 +83,76 @@ const BulletinsScreen = ({ navigation }: bulletimScreenProps) => {
         limite: 10,
         pagina: newPage,
       };
+
       const boletins = await axios.post(
-        `${BASE_API_BULLETINS_NOT_LOGGED}`,
+        BASE_API_BULLETINS_NOT_LOGGED,
         bulletimObj,
         { timeout: 20000 }
       );
+
       if (boletins.data.success) {
         const newBulletins = boletins.data.data.list;
 
-        const filteredBulletins = newBulletins.filter(
+        // Evita duplicados
+        const filtered = newBulletins.filter(
           (novo: any) => !boletimList.some((item) => item.id === novo.id)
         );
 
-        setBoletimList((prev) => [...prev, ...filteredBulletins]);
-
+        setBoletimList((prev) => [...prev, ...filtered]);
         setPage(newPage);
       }
     } catch (error: any) {
-      setLoading(false);
-
-      if (error.code === "ECONNABORTED") {
-        Alert.alert(
-          "Erro de conexão",
-          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-        );
-      } else {
-        Alert.alert(
-          "Erro",
-          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-        );
-      }
-
-      console.warn("Erro no initialSetUp:", error.message);
-      return;
+      Alert.alert(
+        "Erro",
+        "Ocorreu um erro ao carregar mais boletins. Por favor, tente novamente."
+      );
+      console.warn("Erro no loadMoreBulletins:", error.message);
     }
   };
 
-  return loading ? (
-    <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
-      {/* <ActivityIndicator size="large" color="#0000ff" /> */}
-      <Image
-        source={require("../../../assets/loading.gif")}
-        style={{ height: 200, width: 200 }}
-      />
-    </View>
-  ) : (
+  return (
     <Container>
-      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-        <Text style={style.title}>Últimas Publicações</Text>
-        {boletimList.map((item: any, index: number) => (
-          <View key={item.id} style={style.itemContainer}>
-            <TouchableOpacity
-              style={style.itemTouchable}
-              onPress={() => {
-                navigation.navigate("BulletimItem", { boletimId: item.id });
-              }}
+      {loading && boletimList.length === 0 ? (
+        // Skeleton inicial
+        <View style={{ marginTop: 40 }}>
+          <SkeletonItem />
+          <SkeletonItem />
+          <SkeletonItem />
+        </View>
+      ) : (
+        <FlatList
+          data={boletimList}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <Animatable.View
+              style={style.itemContainer}
+              animation="fadeInLeft"
+              duration={4000}
             >
-              <Text style={style.itemTitle}>{item.titulo}</Text>
+              <TouchableOpacity
+                style={style.itemTouchable}
+                onPress={() =>
+                  navigation.navigate("BulletimItem", { boletimId: item.id })
+                }
+              >
+                <Text style={style.itemTitle}>{item.titulo}</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+          )}
+          ListHeaderComponent={
+            <Text style={style.title}>Últimas Publicações</Text>
+          }
+          ListFooterComponent={
+            <TouchableOpacity
+              style={style.buttonContainer}
+              onPress={loadMoreBulletins}
+            >
+              <Text style={style.buttonText}>Clique Aqui para ver mais</Text>
             </TouchableOpacity>
-          </View>
-        ))}
-        <TouchableOpacity
-          style={style.buttonContainer}
-          onPress={loadMoreBulletins}
-        >
-          <Text style={style.buttonText}>Clique Aqui para ver mais</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          }
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
     </Container>
   );
 };

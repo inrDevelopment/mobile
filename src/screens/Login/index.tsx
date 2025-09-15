@@ -144,10 +144,12 @@ const LoginScreen = ({ navigation }: Props) => {
               placeholder="Usuário"
               placeholderTextColor={Colors.primary.light}
               style={[styles.input, { color: Colors.primary.light }]}
-              keyboardType="default"
+              keyboardType="email-address"
+              autoCorrect={false}
+              autoCapitalize="none"
               value={user}
               onChangeText={(text) => {
-                setUser(text);
+                setUser(text.trim());
               }}
             />
           </Animatable.View>
@@ -172,11 +174,13 @@ const LoginScreen = ({ navigation }: Props) => {
               style={[styles.input, { color: Colors.primary.light }]}
               underlineColorAndroid="transparent"
               secureTextEntry={showPassword ? false : true}
-              autoCorrect={false}
               textContentType={"password"}
               multiline={false}
+              keyboardType="default"
               value={password}
-              onChangeText={(text) => setPassword(text)}
+              autoCorrect={false}
+              autoCapitalize="none"
+              onChangeText={(text) => setPassword(text.trim())}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}

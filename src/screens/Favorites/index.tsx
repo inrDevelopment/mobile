@@ -1,194 +1,178 @@
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
-import { Image as ExpoImage } from "expo-image";
-import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import * as Animatable from "react-native-animatable";
 import { Container } from "../../components/Container";
+import SkeletonItem from "../../components/SkeletonView";
 import { BASE_API_GET_FAVORITES } from "../../constants/api";
 import { useAuth } from "../../contexts/AuthenticationContext";
 import { getUser } from "../../lib/storage/userStorage";
 import { RootListType } from "../../navigation/root";
 import { style } from "./style";
 
-type favoritesScreenNavigationProp = DrawerNavigationProp<
+type FavoritesScreenNavigationProp = DrawerNavigationProp<
   RootListType,
   "Favorites"
 >;
 
-interface favoritesScreenProps {
-  navigation: favoritesScreenNavigationProp;
+interface FavoritesScreenProps {
+  navigation: FavoritesScreenNavigationProp;
 }
 
-const BulletinsScreen = ({ navigation }: favoritesScreenProps) => {
+const FavoritesScreen = ({ navigation }: FavoritesScreenProps) => {
   const authContext = useAuth();
   const isFocused = useIsFocused();
   const [favoritesList, setFavoritesList] = useState<any[]>([]);
   const [page, setPage] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingInitial, setLoadingInitial] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
-  useEffect(() => {
-    const initialSetup = async () => {
+  const fetchFavorites = useCallback(
+    async (reset = false) => {
       try {
-        setLoading(true);
+        if (!authContext.isLoggedIn) return;
+
+        if (reset) {
+          setLoadingInitial(true);
+          setPage(0);
+        }
+
         const user = await getUser();
-        setPage(() => 0);
-        //Buscar os boletins na API
-        const bulletimObj = {
+
+        if (!user?.userToken) {
+          Alert.alert("Erro!", "Por favor, clique em Entrar para continuar.");
+          setLoadingInitial(false);
+          return;
+        }
+
+        const favoritesObj = {
           numero: null,
           boletim_tipo_id: [1, 2, 3],
           data: null,
           limite: 10,
-          pagina: page,
+          pagina: reset ? 0 : page,
         };
-        const favorites = await axios.post(
+
+        const response = await axios.post(
           `${BASE_API_GET_FAVORITES}`,
-          bulletimObj,
+          favoritesObj,
           {
             timeout: 20000,
-            headers: {
-              credential: user.userToken,
-            },
+            headers: { credential: user.userToken },
           }
         );
 
-        if (favorites.data.success) {
-          setFavoritesList(() => [...favorites.data.data.list]);
+        if (response.data.success) {
+          const newList = response.data.data.list || [];
+          setFavoritesList(
+            reset
+              ? newList
+              : (prev) => [
+                  ...prev,
+                  ...newList.filter(
+                    (item: any) => !prev.some((p) => p.id === item.id)
+                  ),
+                ]
+          );
         }
-        setLoading(false);
       } catch (error: any) {
-        setLoading(false);
-
-        if (error.code === "ECONNABORTED") {
-          Alert.alert(
-            "Erro de conexão",
-            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-          );
-        } else {
-          Alert.alert(
-            "Erro",
-            "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-          );
-        }
-
-        console.warn("Erro no initialSetUp:", error.message);
-        return;
-      }
-    };
-
-    initialSetup();
-
-    if (isFocused) {
-      //Buscar Favoritos
-      initialSetup();
-    }
-  }, [isFocused]);
-
-  const loadMoreFavorites = async () => {
-    try {
-      const newPage = page + 1;
-      const user = await getUser();
-
-      if (!user.userToken) {
-        Alert.alert(
-          "Erro!",
-          "Por favor, clique no botão Entrar para continuar."
-        );
-        return;
-      }
-
-      const favoritesObj = {
-        numero: null,
-        boletim_tipo_id: [3],
-        data: null,
-        limite: 2,
-        pagina: newPage,
-      };
-      const boletins = await axios.post(
-        `${BASE_API_GET_FAVORITES}`,
-        favoritesObj,
-        {
-          timeout: 20000,
-          headers: {
-            credential: user.userToken,
-          },
-        }
-      );
-      if (boletins.data.success) {
-        const newBulletins = boletins.data.data.list;
-
-        const filteredBulletins = newBulletins.filter(
-          (novo: any) => !favoritesList.some((item) => item.id === novo.id)
-        );
-
-        setFavoritesList((prev) => [...prev, ...filteredBulletins]);
-
-        setPage(newPage);
-      }
-    } catch (error: any) {
-      setLoading(false);
-
-      if (error.code === "ECONNABORTED") {
-        Alert.alert(
-          "Erro de conexão",
-          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
-        );
-      } else {
+        console.warn("Erro ao buscar favoritos:", error.message);
         Alert.alert(
           "Erro",
-          "Ocorreu um erro ao carregar os dados. Por favor, tente novamente."
+          error.code === "ECONNABORTED"
+            ? "Erro de conexão. Tente novamente."
+            : "Ocorreu um erro ao carregar os dados."
         );
+      } finally {
+        setLoadingInitial(false);
+        setLoadingMore(false);
       }
+    },
+    [authContext.isLoggedIn, page]
+  );
 
-      console.warn("Erro no initialSetUp:", error.message);
-      return;
-    }
+  useEffect(() => {
+    if (isFocused) fetchFavorites(true);
+  }, [isFocused, fetchFavorites]);
+
+  const loadMoreFavorites = async () => {
+    if (loadingMore || loadingInitial) return;
+
+    setLoadingMore(true);
+    setPage((prev) => prev + 1);
+    await fetchFavorites(false);
   };
 
-  return loading ? (
-    <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
-      {/* <ActivityIndicator size="large" color="#0000ff" /> */}
-      <ExpoImage
-        source={require("../../../assets/loading.gif")}
-        style={{ height: 200, width: 200 }}
-      />
-    </View>
-  ) : (
+  if (loadingInitial) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", marginTop: 150 }}>
+        <SkeletonItem />
+        <SkeletonItem />
+        <SkeletonItem />
+      </View>
+    );
+  }
+
+  return (
     <Container>
-      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-        {!authContext.isLoggedIn ? (
-          <Text style={style.notLogged}>
-            Atualmente você não está logado. Por favor, clique em Entrar acima
-            para visualizar seus favoritos.
-          </Text>
-        ) : (
-          <View>
-            <Text style={style.title}>Seus Favoritos</Text>
-            {favoritesList.map((item: any, index: number) => (
-              <View key={item.id} style={style.itemContainer}>
-                <TouchableOpacity
-                  style={style.itemTouchable}
-                  onPress={() => {
-                    navigation.navigate("ClassificatorItem", {
-                      classificadorId: item.id,
-                    });
-                  }}
-                >
-                  <Text style={style.itemTitle}>{item.titulo}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity
-              style={style.buttonContainer}
-              onPress={loadMoreFavorites}
+      {!authContext.isLoggedIn ? (
+        <Text style={style.notLogged}>
+          Atualmente você não está logado. Por favor, clique em Entrar acima
+          para visualizar seus favoritos.
+        </Text>
+      ) : (
+        <FlatList
+          data={favoritesList}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          ListHeaderComponent={<Text style={style.title}>Seus Favoritos</Text>}
+          renderItem={({ item }) => (
+            <Animatable.View
+              style={style.itemContainer}
+              animation="fadeInLeft"
+              duration={3000}
             >
-              <Text style={style.buttonText}>Clique Aqui para ver mais</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
+              <TouchableOpacity
+                style={style.itemTouchable}
+                onPress={() =>
+                  navigation.navigate("ClassificatorItem", {
+                    classificadorId: item.id,
+                  })
+                }
+              >
+                <Text style={style.itemTitle}>{item.titulo}</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+          )}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                size="small"
+                color="#000"
+                style={{ margin: 10 }}
+              />
+            ) : (
+              <TouchableOpacity
+                style={style.buttonContainer}
+                onPress={loadMoreFavorites}
+              >
+                <Text style={style.buttonText}>Clique Aqui para ver mais</Text>
+              </TouchableOpacity>
+            )
+          }
+        />
+      )}
     </Container>
   );
 };
 
-export default BulletinsScreen;
+export default FavoritesScreen;
