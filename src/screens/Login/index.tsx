@@ -124,7 +124,15 @@ const LoginScreen = ({ navigation }: Props) => {
             style={styles.titleView}
             duration={3000}
           >
-            <Image source={require("../../../assets/images/Logo.jpg")} />
+            <Image
+              source={require("../../../assets/images/inrLogin.png")}
+              style={{
+                resizeMode: "contain",
+                width: 250,
+                height: 250,
+                marginBottom: -60,
+              }}
+            />
           </Animatable.View>
           <Animatable.View
             animation="fadeInLeft"

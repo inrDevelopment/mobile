@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   },
   manTitleContainer: {
     alignItems: "flex-end",
-    marginRight: "2%",
+    marginHorizontal: 10,
   },
   mainTitle: {
     fontWeight: "bold",

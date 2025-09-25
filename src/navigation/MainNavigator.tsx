@@ -31,7 +31,7 @@ const MainNavigator = () => {
   return (
     <Drawer.Navigator
       backBehavior="history"
-      screenOptions={{
+      screenOptions={({ route, navigation }) => ({
         drawerType: "slide",
         headerTitleAlign: "left",
         headerTintColor: Colors.primary.dark,
@@ -49,6 +49,10 @@ const MainNavigator = () => {
           borderBottomWidth: 0,
         },
         headerRight: () => {
+          if (route.name === "LogIn") {
+            return null;
+          }
+
           if (authContext.isLoggedIn) {
             return (
               <Image
@@ -68,7 +72,7 @@ const MainNavigator = () => {
             );
           }
         },
-      }}
+      })}
     >
       <Drawer.Screen
         name="Home"

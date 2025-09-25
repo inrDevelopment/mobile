@@ -30,12 +30,10 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
 
   const isFocused = useIsFocused();
 
-  // Buscar últimos boletins
   const fetchLastItems = async () => {
     try {
       setLoadingLastItems(true);
 
-      // Executa as 3 chamadas em paralelo
       const requests = [1, 2, 3].map((tipo) =>
         axios
           .post(
@@ -65,7 +63,6 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
     }
   };
 
-  // Buscar favoritos
   const fetchFavoritos = async () => {
     if (!authContext.isLoggedIn) {
       setFavoritos([]);
@@ -111,7 +108,7 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
     if (isFocused) {
       Promise.all([fetchLastItems(), fetchFavoritos()]);
     }
-  }, [isFocused]);
+  }, [isFocused, authContext.isLoggedIn]);
 
   return (
     <Container>
@@ -185,7 +182,15 @@ const HomeScreen = ({ navigation }: homeScreenProps) => {
             </Animatable.View>
           ))
         ) : (
-          <Text>Nenhum favorito encontrado</Text>
+          <Text
+            style={{
+              fontWeight: 500,
+              fontSize: 18,
+              textAlign: "center",
+            }}
+          >
+            Nenhum favorito encontrado
+          </Text>
         )}
       </ScrollView>
     </Container>

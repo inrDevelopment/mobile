@@ -40,6 +40,8 @@ const BulletimItem = ({ navigation }: Props) => {
   useEffect(() => {
     const initialSetup = async () => {
       try {
+        console.log(boletimId);
+
         setLoading(true);
         if (!authContext.isLoggedIn) {
           const apiResponse = await axios.get(
@@ -106,7 +108,7 @@ const BulletimItem = ({ navigation }: Props) => {
       //Buscar Favoritos
       initialSetup();
     }
-  }, []);
+  }, [boletimId, isFocused]);
 
   const [sections, setSections] = useState<Record<string, any[]>>({});
 
